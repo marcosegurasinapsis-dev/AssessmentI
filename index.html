@@ -2,85 +2,253 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Appraisal ERP - Cloud Edition</title>
+    <title>Appraisal de Adopción - Cloud Edition (Lógica de Madurez Estricta)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <style>
-        /* [Se mantienen todos los estilos CSS del diseño anterior para asegurar la interfaz limpia] */
-        :root { --fi-color: #16a34a; --li-color: #eab308; --pi-color: #f97316; --ny-color: #dc2626; --nr-color: #cbd5e1; --primary: #0f172a; --secondary: #64748b; --border-color: #e2e8f0; --radius-md: 6px; --radius-lg: 12px; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; color: #1e293b; margin: 0; padding: 30px; font-size: 12px; background-color: #f1f5f9; }
-        .dashboard-container { max-width: 1750px; margin: 0 auto; background: white; padding: 35px; border-radius: var(--radius-lg); box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.05); }
-        .header-grid { display: grid; grid-template-columns: 1fr; align-items: center; background-color: #0f172a; padding: 20px; border-radius: var(--radius-lg); text-align: center; margin-bottom: 25px; }
-        .header-titles h1 { font-size: 24px; color: #ffffff; margin: 0; font-weight: 800; }
-        .header-titles p { color: #94a3b8; margin: 5px 0 0 0; }
-        .tabs-container { display: flex; gap: 4px; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); }
-        .tab-btn { background: #f8fafc; border: 1px solid var(--border-color); padding: 12px 18px; font-weight: 600; color: var(--secondary); cursor: pointer; border-radius: 6px 6px 0 0; }
-        .tab-btn.active { color: white; background: var(--primary); }
-        .tab-content { display: none; } .tab-content.active { display: block; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
-        th, td { padding: 8px 10px; border-bottom: 1px solid var(--border-color); text-align: left; }
-        th { background: #f8fafc; color: #475569; font-size: 10px; text-transform: uppercase; }
+        :root {
+            --fi-color: #16a34a; 
+            --li-color: #eab308; 
+            --pi-color: #f97316; 
+            --ny-color: #dc2626; 
+            --nr-color: #cbd5e1; 
+            --primary: #0f172a;
+            --secondary: #64748b;
+            --bg-light: #f8fafc;
+            --border-color: #e2e8f0;
+            --radius-md: 6px;
+            --radius-lg: 12px;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 30px;
+            font-size: 12px;
+            background-color: #f1f5f9;
+        }
+
+        .dashboard-container {
+            max-width: 1750px;
+            margin: 0 auto;
+            background: white;
+            padding: 35px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.05);
+        }
+
+        /* --- ENCABEZADO Y CONTROLES --- */
+        .header-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            align-items: center;
+            background-color: #0f172a; 
+            padding: 25px;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header-titles h1 { font-size: 24px; color: #ffffff; margin: 0 0 6px 0; font-weight: 800; }
+        .header-titles p { margin: 0; color: #94a3b8; font-size: 13px; font-weight: 500; }
+
+        .client-bar {
+            background: #1e293b;
+            padding: 15px 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+        }
+
+        .client-bar label { font-weight: bold; font-size: 13px; }
+        .client-bar input { width: 250px; background: #0f172a; color: white; border: 1px solid #475569; padding: 8px; border-radius: var(--radius-md); font-weight: bold; }
+        
+        .status-indicator { margin-left: auto; font-weight: bold; color: #38bdf8; display: flex; align-items: center; gap: 6px; }
+
+        /* --- RECUADROS TOP --- */
+        .blocks-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+        .summary-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; }
+        .summary-card h3 { margin: 0 0 15px 0; color: var(--primary); font-size: 14px; border-bottom: 2px solid #cbd5e1; padding-bottom: 6px; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 600; }
+        
+        .progress-bar-bg { background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+        .progress-bar-fill { height: 100%; width: 0%; background: var(--fi-color); transition: width 0.3s ease; }
+
+        /* --- SISTEMA DE PESTAÑAS --- */
+        .tabs-container { display: flex; gap: 4px; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); overflow-x: auto; }
+        .tab-btn { background: #f8fafc; border: 1px solid var(--border-color); border-bottom: none; padding: 12px 18px; font-size: 11px; font-weight: 600; color: var(--secondary); border-radius: var(--radius-md) var(--radius-md) 0 0; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; position: relative; bottom: -2px; }
+        .tab-btn:hover { color: var(--primary); background: #f1f5f9; }
+        .tab-btn.active { color: white; background: var(--primary); border-color: var(--primary); font-weight: 700; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* --- TABLAS JERÁRQUICAS --- */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 25px; background: white; border: 1px solid var(--border-color); }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        th { background: #f8fafc; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 10px; }
+        
+        .module-row-header { background-color: #3b71ca; color: white; font-weight: 700; padding: 12px 14px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; border-radius: var(--radius-md) var(--radius-md) 0 0; }
+        .prosuite-header { background-color: #2563eb !important; }
+        
         .row-parent { background-color: #f8fafc; font-weight: bold; border-left: 4px solid #3b71ca; }
-        .row-child td:first-child { padding-left: 25px; }
-        .module-row-header { background-color: #3b71ca; color: white; padding: 12px; font-weight: bold; display: flex; justify-content: space-between; border-radius: 6px 6px 0 0; }
-        .btn-action { padding: 4px 8px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; color: white; background: #0f172a; }
-        .badge-calculated { display: inline-block; padding: 4px 8px; font-weight: bold; border-radius: 4px; text-align: center; border: 1px solid #475569; }
-        select, textarea, input { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px; }
-        .badge-FI { background-color: #f0fdf4 !important; color: var(--fi-color) !important; }
-        .badge-LI { background-color: #fef9c3 !important; color: #a16207 !important; }
-        .badge-PI { background-color: #fff7ed !important; color: var(--pi-color) !important; }
-        .badge-NY { background-color: #fef2f2 !important; color: var(--ny-color) !important; }
-        .badge-NR { background-color: #e2e8f0 !important; color: #475569 !important; }
+        .row-child { background-color: #ffffff; }
+        .row-child td:first-child { padding-left: 25px; color: var(--secondary); }
+
+        select, textarea, input[type="text"] { width: 100%; box-sizing: border-box; font-family: inherit; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; outline: none; }
+        select { font-weight: 600; cursor: pointer; background: white; }
+        
+        .badge-calculated { display: inline-block; padding: 4px 8px; font-weight: bold; border-radius: 4px; text-align: center; width: 90%; border: 1px solid #475569; font-size: 11px; text-transform: uppercase; }
+
+        select.badge-FI, .badge-FI { background-color: #f0fdf4 !important; color: var(--fi-color) !important; border-color: #bbf7d0 !important; }
+        select.badge-LI, .badge-LI { background-color: #fef9c3 !important; color: #a16207 !important; border-color: #fef08a !important; }
+        select.badge-PI, .badge-PI { background-color: #fff7ed !important; color: var(--pi-color) !important; border-color: #fed7aa !important; }
+        select.badge-NY, .badge-NY { background-color: #fef2f2 !important; color: var(--ny-color) !important; border-color: #fecaca !important; }
+        select.badge-NR, .badge-NR { background-color: #e2e8f0 !important; color: #475569 !important; border-color: #cbd5e1 !important; }
+
+        .btn-action { padding: 6px 12px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; color: white; }
+        .btn-add-parent { background: #0f172a; }
+        .btn-add-child { background: #2563eb; }
+        .btn-cloud-load { background: #3b71ca; }
+
+        .export-bar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px; }
+        .btn-export-excel { background: #16a34a; color: white; border: none; padding: 8px 14px; font-weight: bold; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="dashboard-container">
+        
         <div class="header-grid">
             <div class="header-titles">
                 <h1>Appraisal de Adopción de Procesos ERP</h1>
-                <p>Ecosistema Conectado a la Nube (Supabase Realtime)</p>
+                <p>Ecosistema Conectado a la Nube (Supabase Cloud + Lógica Estricta de Madurez)</p>
+            </div>
+        </div>
+
+        <div class="client-bar">
+            <label>📂 ID Único Cliente:</label>
+            <input type="text" id="client-id-input" value="demo" placeholder="Escribe el ID del cliente...">
+            <button class="btn-action btn-cloud-load" onclick="loadAllModulesData()">⚡ Cargar / Crear Cliente</button>
+            <div class="status-indicator" id="cloud-status">⏳ Conectando a Supabase...</div>
+        </div>
+
+        <div class="blocks-summary-grid">
+            <div class="summary-card">
+                <h3>📦 Bloque Módulos Nucleares</h3>
+                <div class="stat-row"><span>Adopción Estricta:</span><span id="score-nucleares">0%</span></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-nucleares"></div></div>
+            </div>
+            <div class="summary-card">
+                <h3>💰 Bloque Módulos Financieros</h3>
+                <div class="stat-row"><span>Adopción Estricta:</span><span id="score-financieros">0%</span></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-financieros"></div></div>
+            </div>
+            <div class="summary-card">
+                <h3>⚙️ Bloque Módulos Auxiliares</h3>
+                <div class="stat-row"><span>Adopción Estricta:</span><span id="score-auxiliares">0%</span></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-auxiliares"></div></div>
+            </div>
+            <div class="summary-card" style="border-color:#bfdbfe; background:#f0f9ff;">
+                <h3>🚀 Bloque Prosuite</h3>
+                <div class="stat-row"><span>Adopción Estricta:</span><span id="score-prosuite">0%</span></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-prosuite" style="background:#2563eb;"></div></div>
             </div>
         </div>
 
         <div class="tabs-container">
-            <button class="tab-btn active" onclick="switchTab(event, 'pestana-modulos')">📦 Módulos del Sistema</button>
+            <button class="tab-btn active" onclick="switchTab(event, 'pestana-nucleares')">📦 Módulos Nucleares</button>
+            <button class="tab-btn" onclick="switchTab(event, 'pestana-financieros')">💰 Módulos Financieros</button>
+            <button class="tab-btn" onclick="switchTab(event, 'pestana-auxiliares')">⚙️ Módulos Auxiliares</button>
+            <button class="tab-btn" onclick="switchTab(event, 'pestana-prosuite')">🚀 Prosuite</button>
         </div>
 
-        <div id="pestana-modulos" class="tab-content active">
-            <div id="block-container-nucleares"></div>
-        </div>
+        <div id="pestana-nucleares" class="tab-content active"><div id="block-container-nucleares"></div></div>
+        <div id="pestana-financieros" class="tab-content"><div id="block-container-financieros"></div></div>
+        <div id="pestana-auxiliares" class="tab-content"><div id="block-container-auxiliares"></div></div>
+        <div id="pestana-prosuite" class="tab-content"><div id="block-container-prosuite"></div></div>
+
     </div>
 
     <script>
-        // CONFIGURACIÓN DE SUPABASE (Vercel leerá esto automáticamente)
-        const SUPABASE_URL = window.location.hostname === 'localhost' ? 'TU_SUPABASE_URL_LOCAL' : 'https://' + window.location.hostname.replace('vercel.app', 'supabase.co'); 
-        // Para desarrollo rápido, puedes pegar tus llaves directas aquí de forma segura si el repo es privado:
-        const supabaseUrl = 'https://TU_PROYECTO.supabase.co';
-        const supabaseKey = 'TU_ANON_KEY';
+        // === CONFIGURACIÓN DE CRUCIAL DE SUPABASE ===
+        const supabaseUrl = 'https://TU_PROYECTO.supabase.co'; // Cambia por tu URL Real de Supabase
+        const supabaseKey = 'TU_ANON_KEY';                    // Cambia por tu Anon Key Real de Supabase
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const modKey = 'trafico'; // Ejemplo para el módulo de tráfico
+        // Estructura Operativa del Sistema
+        const blocksMapping = {
+            nucleares: ['trafico', 'facturacion', 'liquidaciones', 'vigilancia', 'rastreo', 'administracion'],
+            financieros: ['cxc', 'cxp', 'bancos', 'cajachica', 'activofijo', 'contabilidad'],
+            auxiliares: ['compras', 'almacen', 'mantenimiento', 'llantas'],
+            prosuite: ['drivelog', 'securitylog', 'analytics', 'edi']
+        };
 
-        // Cargar datos desde la base de datos cloud
-        async function loadData() {
-            // Traer padres con sus hijos incluidos (Join nativo de Supabase)
-            let { data: conceptos, error } = await _supabase
-                .from('conceptos_padre')
-                .select(`
-                    id, modulo_key, texto, notas, eval_manual,
-                    subconceptos_hijo ( id, texto, eval, notas )
-                `)
-                .eq('modulo_key', modKey);
+        const moduleMeta = {
+            trafico: { title: "1. Tráfico y Embarques" }, facturacion: { title: "2. Facturación" }, liquidaciones: { title: "3. Liquidaciones de Viaje" },
+            vigilancia: { title: "4. Vigilancia y Accesos" }, rastreo: { title: "5. Rastreo Satelital" }, administracion: { title: "6. Admin. Sistema" },
+            cxc: { title: "7. Cuentas por Cobrar" }, cxp: { title: "8. Cuentas por Pagar" }, bancos: { title: "9. Control Bancario" },
+            cajachica: { title: "10. Caja Chica" }, activofijo: { title: "11. Activo Fijo" }, contabilidad: { title: "12. Contabilidad General" },
+            compras: { title: "13. Compras e Insumos" }, almacen: { title: "14. Almacén de Refacciones" }, mantenimiento: { title: "15. Mantenimiento de Flota" }, llantas: { title: "16. Control de Llantas" },
+            drivelog: { title: "17. Drivelog", isPro: true }, securitylog: { title: "18. Securitylog", isPro: true }, analytics: { title: "19. Analytics & KPIs", isPro: true }, edi: { title: "20. EDI Integration", isPro: true }
+        };
 
-            if (error) console.error(error);
-            else renderTable(conceptos);
+        let localLoadedData = {}; // Cache local en memoria de ejecución
+
+        function getClienteId() {
+            return document.getElementById('client-id-input').value.trim() || 'demo';
         }
 
-        // Lógica de cálculo estricto (Eslabón más débil)
+        // === LEER DESDE LA NUBE (Join Multitenant) ===
+        async function loadAllModulesData() {
+            document.getElementById('cloud-status').innerText = "🔄 Cargando datos cloud...";
+            const cliente = getClienteId();
+
+            try {
+                let { data: conceptos, error } = await _supabase
+                    .from('conceptos_padre')
+                    .select(`
+                        id, modulo_key, texto, notas, eval_manual,
+                        subconceptos_hijo ( id, texto, eval, notas )
+                    `)
+                    .eq('cliente_id', cliente);
+
+                if (error) throw error;
+
+                // Limpiar estructura local vacía
+                localLoadedData = {};
+                Object.keys(moduleMeta).forEach(m => localLoadedData[m] = []);
+
+                // Agrupar la información devuelta por la base de datos
+                conceptos.forEach(c => {
+                    if(localLoadedData[c.modulo_key]) {
+                        localLoadedData[c.modulo_key].push(c);
+                    }
+                });
+
+                // Renderizar las tablas en la interfaz
+                renderAllTables();
+                document.getElementById('cloud-status').innerText = "🟢 Sincronizado";
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('cloud-status').innerText = "🔴 Error de conexión";
+            }
+        }
+
+        // === CÁLCULO ESTRICTO DE MADUREZ (REGLA DEL ESLABÓN MÁS DÉBIL) ===
         function calculateStrictMaturity(parent) {
-            if (!parent.subconceptos_hijo || parent.subconceptos_hijo.length === 0) return parent.eval_manual || "NR";
-            let hasNY = false, hasPI = false, hasLI = false, fiCount = 0;
+            if (!parent.subconceptos_hijo || parent.subconceptos_hijo.length === 0) {
+                return parent.eval_manual || "NR";
+            }
+
+            let hasNY = false, hasPI = false, hasLI = false;
             let total = parent.subconceptos_hijo.length;
+            let fiCount = 0;
 
             parent.subconceptos_hijo.forEach(child => {
                 if (child.eval === "NY") hasNY = true;
@@ -89,95 +257,160 @@
                 else if (child.eval === "FI") fiCount++;
             });
 
-            if (hasNY) return "NY";
-            if (hasPI) return "PI";
-            if (hasLI || (fiCount > 0 && fiCount < total)) return "LI";
-            if (fiCount === total) return "FI";
+            if (hasNY) return "NY"; // Falla catastrófica / Proceso roto
+            if (hasPI) return "PI"; // Parcialidades bloqueantes
+            if (hasLI || (fiCount > 0 && fiCount < total)) return "LI"; // Mayoría
+            if (fiCount === total) return "FI"; // Validación 100% Completa
             return "NR";
         }
 
-        // Renderizar la tabla dinámica
-        function renderTable(conceptos) {
-            const container = document.getElementById('block-container-nucleares');
-            container.innerHTML = `
-                <div class="module-row-header">
-                    <span>1. TRÁFICO Y EMBARQUES</span>
-                    <button class="btn-action" onclick="addParent()">➕ Añadir Concepto Principal</button>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 10%">ID</th>
-                            <th style="width: 50%">Concepto / Lineamiento</th>
-                            <th style="width: 20%">Calificación Estricta</th>
-                            <th style="width: 20%">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-data"></tbody>
-                </table>
-            `;
+        // === RENDERIZACIÓN DE TABLAS JERÁRQUICAS ===
+        function renderAllTables() {
+            for (let blockName in blocksMapping) {
+                const container = document.getElementById(`block-container-${blockName}`);
+                if (!container) continue;
+                container.innerHTML = "";
 
-            const tbody = document.getElementById('tbody-data');
+                blocksMapping[blockName].forEach(modKey => {
+                    const meta = moduleMeta[modKey];
+                    const section = document.createElement('div');
+                    section.style.marginBottom = "30px";
 
-            conceptos.forEach((parent) => {
-                let status = calculateStrictMaturity(parent);
-
-                // Fila Padre
-                const trP = document.createElement('tr');
-                trP.className = "row-parent";
-                trP.innerHTML = `
-                    <td>P-${parent.id}</td>
-                    <td><input type="text" value="${parent.texto}" onchange="updateParentText(${parent.id}, this.value)"></td>
-                    <td><span class="badge-calculated badge-${status}">${status}</span></td>
-                    <td><button class="btn-action" style="background:#2563eb;" onclick="addChild(${parent.id})">➕ Hijo</button></td>
-                `;
-                tbody.appendChild(trP);
-
-                // Filas Hijos
-                parent.subconceptos_hijo.forEach(child => {
-                    const trC = document.createElement('tr');
-                    trC.className = "row-child";
-                    trC.innerHTML = `
-                        <td>↳ H-${child.id}</td>
-                        <td><input type="text" value="${child.texto}" onchange="updateChildText(${child.id}, this.value)"></td>
-                        <td>
-                            <select class="badge-${child.eval}" onchange="updateChildEval(${child.id}, this.value)">
-                                <option value="NR" ${child.eval==='NR'?'selected':''}>NR</option>
-                                <option value="FI" ${child.eval==='FI'?'selected':''}>FI</option>
-                                <option value="LI" ${child.eval==='LI'?'selected':''}>LI</option>
-                                <option value="PI" ${child.eval==='PI'?'selected':''}>PI</option>
-                                <option value="NY" ${child.eval==='NY'?'selected':''}>NY</option>
-                            </select>
-                        </td>
-                        <td></td>
+                    section.innerHTML = `
+                        <div class="module-row-header ${meta.isPro ? 'prosuite-header' : ''}">
+                            <span>${meta.title.toUpperCase()}</span>
+                            <button class="btn-action btn-add-parent" onclick="addParentCloud('${modKey}')">➕ Añadir Concepto Base</button>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%">Código</th>
+                                    <th style="width: 50%">Requerimientos del Proceso / Lineamientos Hijos</th>
+                                    <th style="width: 20%">Calificación Operativa (Eslabón Crítico)</th>
+                                    <th style="width: 20%">Notas Técnicas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-${modKey}"></tbody>
+                        </table>
                     `;
-                    tbody.appendChild(trC);
+                    container.appendChild(section);
+
+                    const tbody = document.getElementById(`tbody-${modKey}`);
+                    const padres = localLoadedData[modKey] || [];
+
+                    padres.forEach((parent) => {
+                        let finalEval = calculateStrictMaturity(parent);
+
+                        // Fila del Concepto Padre
+                        const trP = document.createElement('tr');
+                        trP.className = "row-parent";
+                        trP.innerHTML = `
+                            <td>P-${parent.id}</td>
+                            <td>
+                                <input type="text" value="${parent.texto}" onchange="updateParentTextCloud(${parent.id}, this.value)">
+                                <div style="margin-top:5px;"><button class="btn-action btn-add-child" onclick="addChildCloud(${parent.id})">➕ Añadir Lineamiento Técnico</button></div>
+                            </td>
+                            <td>
+                                ${parent.subconceptos_hijo.length > 0 ? 
+                                    `<span class="badge-calculated badge-${finalEval}">${finalEval}</span>` : 
+                                    `<select class="badge-${finalEval}" onchange="updateParentEvalManualCloud(${parent.id}, this.value)">
+                                        <option value="NR" ${finalEval==='NR'?'selected':''}>NR</option>
+                                        <option value="FI" ${finalEval==='FI'?'selected':''}>FI</option>
+                                        <option value="LI" ${finalEval==='LI'?'selected':''}>LI</option>
+                                        <option value="PI" ${finalEval==='PI'?'selected':''}>PI</option>
+                                        <option value="NY" ${finalEval==='NY'?'selected':''}>NY</option>
+                                    </select>`
+                                }
+                            </td>
+                            <td><textarea onchange="updateParentNotasCloud(${parent.id}, this.value)">${parent.notas || ''}</textarea></td>
+                        `;
+                        tbody.appendChild(trP);
+
+                        // Filas de Subconceptos Hijos
+                        parent.subconceptos_hijo.forEach(child => {
+                            const trC = document.createElement('tr');
+                            trC.className = "row-child";
+                            trC.innerHTML = `
+                                <td>↳ H-${child.id}</td>
+                                <td><input type="text" value="${child.texto}" onchange="updateChildTextCloud(${child.id}, this.value)"></td>
+                                <td>
+                                    <select class="badge-${child.eval}" onchange="updateChildEvalCloud(${child.id}, this.value)">
+                                        <option value="NR" ${child.eval==='NR'?'selected':''}>NR</option>
+                                        <option value="FI" ${child.eval==='FI'?'selected':''}>FI</option>
+                                        <option value="LI" ${child.eval==='LI'?'selected':''}>LI</option>
+                                        <option value="PI" ${child.eval==='PI'?'selected':''}>PI</option>
+                                        <option value="NY" ${child.eval==='NY'?'selected':''}>NY</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" value="${child.notas || ''}" placeholder="Métrica..." onchange="updateChildNotasCloud(${child.id}, this.value)"></td>
+                            `;
+                            tbody.appendChild(trC);
+                        });
+                    });
                 });
-            });
+            }
+            recalculateSummaryScores();
         }
 
-        // ESCRIBIR EN LA NUBE (Mutaciones Cloud)
-        async function addParent() {
-            await _supabase.from('conceptos_padre').insert([{ modulo_key: modKey, texto: 'Nuevo Requerimiento Operativo' }]);
-            loadData();
+        // === PROCESAMIENTO Y METRICAS TOP ===
+        function recalculateSummaryScores() {
+            for (let blockName in blocksMapping) {
+                let totalItems = 0; let scoredPoints = 0;
+                blocksMapping[blockName].forEach(mod => {
+                    const padres = localLoadedData[mod] || [];
+                    padres.forEach(p => {
+                        totalItems++;
+                        let val = calculateStrictMaturity(p);
+                        if (val === 'FI') scoredPoints += 1.0; 
+                        else if (val === 'LI') scoredPoints += 0.7; 
+                        else if (val === 'PI') scoredPoints += 0.3;
+                    });
+                });
+                const pct = totalItems > 0 ? Math.round((scoredPoints / totalItems) * 100) : 0;
+                document.getElementById(`score-${blockName}`).innerText = `${pct}% Adopción`;
+                document.getElementById(`bar-${blockName}`).style.width = `${pct}%`;
+            }
         }
 
-        async function addChild(padreId) {
-            await _supabase.from('subconceptos_hijo').insert([{ padre_id: padreId, texto: 'Nuevo Lineamiento Específico', eval: 'NR' }]);
-            loadData();
+        // === MUTACIONES CLOUD (ESCRITURA DIRECTA A SUPABASE) ===
+        async function addParentCloud(modKey) {
+            const cliente = getClienteId();
+            await _supabase.from('conceptos_padre').insert([{ modulo_key: modKey, cliente_id: cliente, texto: 'Nuevo Proceso Base' }]);
+            loadAllModulesData();
         }
 
-        async function updateChildEval(childId, newEval) {
+        async function addChildCloud(padreId) {
+            await _supabase.from('subconceptos_hijo').insert([{ padre_id: padreId, texto: 'Nuevo Requerimiento Técnico', eval: 'NR' }]);
+            loadAllModulesData();
+        }
+
+        async function updateChildEvalCloud(childId, newEval) {
             await _supabase.from('subconceptos_hijo').update({ eval: newEval }).eq('id', childId);
-            loadData(); // Recarga y aplica la regla del eslabón más débil en tiempo real
+            loadAllModulesData(); // Reevalúa inmediatamente la cascada del eslabón crítico
         }
 
-        async function updateParentText(id, text) { await _supabase.from('conceptos_padre').update({ texto: text }).eq('id', id); }
-        async function updateChildText(id, text) { await _supabase.from('subconceptos_hijo').update({ texto: text }).eq('id', id); }
-        function switchTab(e, id) { }
+        async function updateParentEvalManualCloud(padreId, newEval) {
+            await _supabase.from('conceptos_padre').update({ eval_manual: newEval }).eq('id', padreId);
+            loadAllModulesData();
+        }
 
-        // Inicializar
-        window.onload = loadData;
+        async function updateParentTextCloud(id, text) { await _supabase.from('conceptos_padre').update({ texto: text }).eq('id', id); }
+        async function updateParentNotasCloud(id, notas) { await _supabase.from('conceptos_padre').update({ notas: notas }).eq('id', id); }
+        async function updateChildTextCloud(id, text) { await _supabase.from('subconceptos_hijo').update({ texto: text }).eq('id', id); }
+        async function updateChildNotasCloud(id, notas) { await _supabase.from('subconceptos_hijo').update({ notas: notas }).eq('id', id); }
+
+        // Navegación de pestañas
+        function switchTab(e, id) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            e.currentTarget.classList.add('active');
+        }
+
+        // Inicialización Automatizada
+        window.onload = function() {
+            loadAllModulesData();
+        };
     </script>
 </body>
 </html>
