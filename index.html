@@ -180,6 +180,7 @@
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'financieros')">💰 3. Módulos Financieros</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'auxiliares')">⚙️ 4. Módulos Auxiliares</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'prosuite')">🚀 5. Prosuite</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-transversal', '')">🎯 6. Diagnóstico Transversal</button>
         </div>
 
         <div id="tab-matriz" class="tab-content active">
@@ -196,7 +197,7 @@
                 </div>
 
                 <div class="matrix-box">
-                    <div class="matrix-title">Matriz de Impacto Transversal</div>
+                    <div class="matrix-title">Matriz de Impacto Transversal (Resumen)</div>
                     <table class="transversal-table">
                         <thead>
                             <tr>
@@ -206,12 +207,8 @@
                                 <th class="header-medio">MEDIO</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr><td class="col-fixed-left">Gobernanza</td><td id="t-gob-ny" class="data-cell">0</td><td id="t-gob-pi" class="data-cell">0</td><td id="t-gob-li" class="data-cell">0</td></tr>
-                            <tr><td class="col-fixed-left">Alineación</td><td id="t-ali-ny" class="data-cell">0</td><td id="t-ali-pi" class="data-cell">0</td><td id="t-ali-li" class="data-cell">0</td></tr>
-                            <tr><td class="col-fixed-left">Cultura</td><td id="t-cul-ny" class="data-cell">0</td><td id="t-cul-pi" class="data-cell">0</td><td id="t-cul-li" class="data-cell">0</td></tr>
-                            <tr><td class="col-fixed-left">Tecnología</td><td id="t-tec-ny" class="data-cell">0</td><td id="t-tec-pi" class="data-cell">0</td><td id="t-tec-li" class="data-cell">0</td></tr>
-                        </tbody>
+                        <tbody id="transversal-body-home">
+                            </tbody>
                     </table>
                 </div>
 
@@ -225,6 +222,26 @@
                 <button class="btn-action" style="background:#ea580c" onclick="cargarPlantillaBaseActual()">🌱 Forzar Semilla Base</button>
             </div>
             <div id="module-editor-container"></div>
+        </div>
+
+        <div id="tab-transversal" class="tab-content">
+            <div style="max-width: 800px; margin: 0 auto;">
+                <div class="matrix-box">
+                    <div class="matrix-title">Mapeo Estratégico General: Diagnóstico Transversal Corporativo</div>
+                    <table class="transversal-table">
+                        <thead>
+                            <tr>
+                                <th>Eje / Pilar Estratégico</th>
+                                <th class="header-critico" style="font-size:12px;">CRÍTICO (NY)</th>
+                                <th class="header-alto" style="font-size:12px;">ALTO (PI)</th>
+                                <th class="header-medio" style="font-size:12px;">MEDIO (LI)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transversal-body-main">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -357,13 +374,16 @@
                 }
             });
 
-            const codigos = { Gobernanza: 'gob', Alineación: 'ali', Cultura: 'cul', Tecnología: 'tec' };
-            for(let ej in ejes) {
-                let c = codigos[ej];
-                document.getElementById(`t-${c}-ny`).innerText = ejes[ej].ny;
-                document.getElementById(`t-${c}-pi`).innerText = ejes[ej].pi;
-                document.getElementById(`t-${c}-li`).innerText = ejes[ej].li;
-            }
+            // Renderizar tanto en el Home (espejo) como en la Pestaña 6 dedicada
+            const htmlGobernanza = `<td class="col-fixed-left">Gobernanza</td><td class="data-cell">${ejes.Gobernanza.ny}</td><td class="data-cell">${ejes.Gobernanza.pi}</td><td class="data-cell">${ejes.Gobernanza.li}</td>`;
+            const htmlAlineacion = `<td class="col-fixed-left">Alineación</td><td class="data-cell">${ejes.Alineación.ny}</td><td class="data-cell">${ejes.Alineación.pi}</td><td class="data-cell">${ejes.Alineación.li}</td>`;
+            const htmlCultura = `<td class="col-fixed-left">Cultura</td><td class="data-cell">${ejes.Cultura.ny}</td><td class="data-cell">${ejes.Cultura.pi}</td><td class="data-cell">${ejes.Cultura.li}</td>`;
+            const htmlTecnologia = `<td class="col-fixed-left">Tecnología</td><td class="data-cell">${ejes.Tecnología.ny}</td><td class="data-cell">${ejes.Tecnología.pi}</td><td class="data-cell">${ejes.Tecnología.li}</td>`;
+
+            const filasUnificadas = `<tr>${htmlGobernanza}</tr><tr>${htmlAlineacion}</tr><tr>${htmlCultura}</tr><tr>${htmlTecnologia}</tr>`;
+            
+            document.getElementById('transversal-body-home').innerHTML = filasUnificadas;
+            document.getElementById('transversal-body-main').innerHTML = filasUnificadas;
         }
 
         function actualizarDashboardGlobal() {
