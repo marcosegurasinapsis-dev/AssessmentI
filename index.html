@@ -36,7 +36,6 @@
             box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.05); 
         }
         
-        /* HEADER ESTILO ORIGINAL */
         .header-grid { 
             background-color: #0f172a; 
             padding: 20px; 
@@ -48,7 +47,6 @@
         .header-grid h1 { font-size: 22px; margin: 0; font-weight: 800; letter-spacing: -0.5px; }
         .header-grid p { color: #94a3b8; margin: 5px 0 0 0; font-size: 12px; }
         
-        /* BARRA DE CONTROL MULTITENANT */
         .client-bar {
             background: #1e293b;
             padding: 10px 20px;
@@ -62,7 +60,6 @@
         .client-bar input { width: 150px; background: #0f172a; color: white; border: 1px solid #475569; padding: 5px 10px; border-radius: var(--radius-md); font-weight: bold; }
         .status-indicator { margin-left: auto; font-weight: bold; color: #38bdf8; display: flex; align-items: center; gap: 6px; }
 
-        /* BLOQUES DE DASHBOARD SUPERIOR */
         .top-dashboard-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -80,14 +77,12 @@
         .progress-bar-bg { background: #e2e8f0; height: 6px; border-radius: 3px; margin-top: 8px; overflow: hidden; }
         .progress-bar-fill { height: 100%; background: var(--fi-color); width: 0%; transition: width 0.4s ease; }
 
-        /* TABS */
         .tabs-container { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; }
         .tab-btn { background: #f8fafc; border: 1px solid var(--border-color); padding: 10px 14px; font-weight: 600; color: var(--secondary); cursor: pointer; border-radius: 6px 6px 0 0; }
         .tab-btn.active { color: white; background: var(--primary); border-color: var(--primary); }
         .tab-content { display: none; } 
         .tab-content.active { display: block; }
         
-        /* DISEÑO DE MATRICES EN PARALELO */
         .matrices-layout {
             display: grid;
             grid-template-columns: 3fr 1fr;
@@ -103,14 +98,12 @@
         }
         .matrix-title { background: #3b71ca; color: white; padding: 10px 15px; font-weight: bold; font-size: 12px; }
         
-        /* TABLAS COMPACTAS */
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 6px 8px; border: 1px solid var(--border-color); text-align: center; }
         th { background: #f8fafc; color: #475569; font-size: 9px; text-transform: uppercase; font-weight: 700; }
         
-        .col-fixed-left { text-align: left; font-weight: bold; background: #f8fafc; width: 60px; }
+        .col-fixed-left { text-align: left; font-weight: bold; background: #f8fafc; width: 80px; }
         
-        /* COLORES DE ESTATUS (BADGES ORIGINALES) */
         .cell-badge { display: block; padding: 4px; font-weight: bold; border-radius: 4px; text-align: center; text-transform: uppercase; font-size: 10px; }
         .badge-FI { background-color: #f0fdf4 !important; color: var(--fi-color) !important; }
         .badge-LI { background-color: #fef9c3 !important; color: #a16207 !important; }
@@ -118,7 +111,6 @@
         .badge-NY { background-color: #fef2f2 !important; color: var(--ny-color) !important; }
         .badge-NR { background-color: #e2e8f0 !important; color: #475569 !important; }
 
-        /* SECCIÓN DE GESTIÓN EDICIÓN JERÁRQUICA */
         .row-parent { background-color: #f1f5f9; font-weight: bold; border-left: 4px solid #3b71ca; }
         .row-child td:first-child { padding-left: 20px; text-align: left; }
         .module-editor-header { background-color: #0f172a; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-radius: 6px 6px 0 0; margin-top: 15px; }
@@ -171,32 +163,16 @@
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'financieros')">💰 3. Módulos Financieros</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'auxiliares')">⚙️ 4. Módulos Auxiliares</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'prosuite')">🚀 5. Prosuite</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-transversal', '')">🎯 6. Diagnóstico Transversal</button>
         </div>
 
         <div id="tab-matriz" class="tab-content active">
-            <div class="matrices-layout">
-                <div class="matrix-box">
-                    <div class="matrix-title">Matriz Visual Diagnóstica (Líneas / Conceptos Principales)</div>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead><tr id="matrix-header-row"><th>Línea</th></tr></thead>
-                            <tbody id="matrix-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="matrix-box">
-                    <div class="matrix-title">Matriz de Impacto Transversal</div>
+            <div class="matrix-box">
+                <div class="matrix-title">Matriz Visual Diagnóstica (Líneas / Conceptos Principales)</div>
+                <div style="overflow-x: auto;">
                     <table>
-                        <thead>
-                            <tr><th>Eje / Pilar</th><th style="color:var(--ny-color)">CRÍTICO</th><th style="color:var(--pi-color)">ALTO</th><th style="color:var(--li-color)">MEDIO</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td class="col-fixed-left">Gobernanza</td><td id="t-gob-crit">0</td><td id="t-gob-alt">0</td><td id="t-gob-med">0</td></tr>
-                            <tr><td class="col-fixed-left">Alineación</td><td id="t-ali-crit">0</td><td id="t-ali-alt">0</td><td id="t-ali-med">0</td></tr>
-                            <tr><td class="col-fixed-left">Cultura</td><td id="t-cul-crit">0</td><td id="t-cul-alt">0</td><td id="t-cul-med">0</td></tr>
-                            <tr><td class="col-fixed-left">Tecnología</td><td id="t-tec-crit">0</td><td id="t-tec-alt">0</td><td id="t-tec-med">0</td></tr>
-                        </tbody>
+                        <thead><tr id="matrix-header-row"><th>Línea</th></tr></thead>
+                        <tbody id="matrix-body"></tbody>
                     </table>
                 </div>
             </div>
@@ -206,8 +182,32 @@
             <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
                 <label style="font-weight: bold; font-size: 12px;">Selecciona el Módulo Específico a Evaluar:</label>
                 <select id="selector-modulo-block" class="selector-modulo-inline" onchange="seleccionarModuloInterno(this.value)"></select>
+                <button class="btn-action" style="background:#ea580c" onclick="cargarPlantillaBaseActual()">🌱 Forzar Semilla Base</button>
             </div>
             <div id="module-editor-container"></div>
+        </div>
+
+        <div id="tab-transversal" class="tab-content">
+            <div class="matrix-box" style="max-width: 900px; margin: 0 auto;">
+                <div class="matrix-title">Matriz de Impacto Transversal (Eje Estratégico por Severidad)</div>
+                <table style="margin-top: 10px;">
+                    <thead>
+                        <tr>
+                            <th>Eje / Pilar Transversal</th>
+                            <th style="color:var(--ny-color); font-weight: bold;">CRÍTICO (NY)</th>
+                            <th style="color:var(--pi-color); font-weight: bold;">ALTO (PI)</th>
+                            <th style="color:var(--li-color); font-weight: bold;">MEDIO (LI)</th>
+                            <th style="color:var(--fi-color); font-weight: bold;">OPTIMIZADO (FI)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="col-fixed-left">Gobernanza</td><td id="t-gob-ny" class="badge-NY">0</td><td id="t-gob-pi" class="badge-PI">0</td><td id="t-gob-li" class="badge-LI">0</td><td id="t-gob-fi" class="badge-FI">0</td></tr>
+                        <tr><td class="col-fixed-left">Alineación</td><td id="t-ali-ny" class="badge-NY">0</td><td id="t-ali-pi" class="badge-PI">0</td><td id="t-ali-li" class="badge-LI">0</td><td id="t-ali-fi" class="badge-FI">0</td></tr>
+                        <tr><td class="col-fixed-left">Cultura</td><td id="t-cul-ny" class="badge-NY">0</td><td id="t-cul-pi" class="badge-PI">0</td><td id="t-cul-li" class="badge-LI">0</td><td id="t-cul-fi" class="badge-FI">0</td></tr>
+                        <tr><td class="col-fixed-left">Tecnología</td><td id="t-tec-ny" class="badge-NY">0</td><td id="t-tec-pi" class="badge-PI">0</td><td id="t-tec-li" class="badge-LI">0</td><td id="t-tec-fi" class="badge-FI">0</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </div>
@@ -240,6 +240,28 @@
             { key: 'edi', name: 'EDI', block: 'prosuite' }
         ];
 
+        // === PLANTILLA CONCEPTOS BASE MAESTRA ===
+        const plantillasBase = {
+            trafico: [
+                { pos: 'pos_1', txt: 'Control y Monitoreo de Viajes Operativos', pilar: 'Tecnología' },
+                { pos: 'pos_2', txt: 'Gestión de Operadores y Disponibilidad de Unidades', pilar: 'Gobernanza' }
+            ],
+            facturacion: [
+                { pos: 'pos_1', txt: 'Timbrado de Cartas Porte Automáticas', pilar: 'Tecnología' },
+                { pos: 'pos_2', txt: 'Conciliación de Evidencias de Entrega', pilar: 'Alineación' }
+            ],
+            liquidaciones: [
+                { pos: 'pos_1', txt: 'Cálculo de Comisiones y Anticipos a Operadores', pilar: 'Gobernanza' },
+                { pos: 'pos_2', txt: 'Descuentos de Combustibles y Casetas', pilar: 'Alineación' }
+            ],
+            vigilancia: [
+                { pos: 'pos_1', txt: 'Bitácora Digital de Accesos de Unidades', pilar: 'Cultura' }
+            ],
+            rastreo: [
+                { pos: 'pos_1', txt: 'Paros de Motor Automatizados ante Desvíos', pilar: 'Tecnología' }
+            ]
+        };
+
         let baseDatosLocal = [];
         let bloqueActivo = 'nucleares';
         let moduloActivo = 'trafico';
@@ -252,7 +274,7 @@
             try {
                 let { data: conceptos, error } = await _supabase
                     .from('conceptos_padre')
-                    .select('id, modulo_key, texto, eval_manual, posicion_fila, subconceptos_hijo(id, texto, eval)')
+                    .select('id, modulo_key, texto, eval_manual, posicion_fila, pilar_transversal, subconceptos_hijo(id, texto, eval)')
                     .eq('cliente_id', getClienteId());
 
                 if (error) throw error;
@@ -289,6 +311,7 @@
             renderMatrizVisual();
             renderEditorModulo();
             actualizarDashboardGlobal();
+            calcularMatrizTransversal();
         }
 
         function renderMatrizVisual() {
@@ -303,11 +326,36 @@
                 let htmlCells = `<td class="col-fixed-left">Pos ${i}</td>`;
                 listadoModulos.forEach(mod => {
                     const padre = baseDatosLocal.find(p => p.modulo_key === mod.key && p.posicion_fila === posKey);
-                    const status = padre ? getMaturity(padre) : "NR";
+                    const status = padre ? getMaturity(parent = padre) : "NR";
                     htmlCells += `<td><span class="cell-badge badge-${status}">${status}</span></td>`;
                 });
                 tr.innerHTML = htmlCells;
                 tbody.appendChild(tr);
+            }
+        }
+
+        // 🎯 CÁLCULO DE PESTAÑA TRANSVERSAL REACTIVA
+        function calcularMatrizTransversal() {
+            const ejes = { Gobernanza: { ny:0, pi:0, li:0, fi:0 }, Alineación: { ny:0, pi:0, li:0, fi:0 }, Cultura: { ny:0, pi:0, li:0, fi:0 }, Tecnología: { ny:0, pi:0, li:0, fi:0 } };
+            
+            baseDatosLocal.forEach(p => {
+                const pilar = p.pilar_transversal || 'Gobernanza';
+                const status = getMaturity(p);
+                if(ejes[pilar]) {
+                    if(status === 'NY') ejes[pilar].ny++;
+                    if(status === 'PI') ejes[pilar].pi++;
+                    if(status === 'LI') ejes[pilar].li++;
+                    if(status === 'FI') ejes[pilar].fi++;
+                }
+            });
+
+            const codigos = { Gobernanza: 'gob', Alineación: 'ali', Cultura: 'cul', Tecnología: 'tec' };
+            for(let ej in ejes) {
+                let c = codigos[ej];
+                document.getElementById(`t-${c}-ny`).innerText = ejes[ej].ny;
+                document.getElementById(`t-${c}-pi`).innerText = ejes[ej].pi;
+                document.getElementById(`t-${c}-li`).innerText = ejes[ej].li;
+                document.getElementById(`t-${c}-fi`).innerText = ejes[ej].fi;
             }
         }
 
@@ -328,6 +376,24 @@
             }
         }
 
+        // SEMBRAR AUTOMÁTICAMENTE CONCEPTOS SI LA SOLICITUD ESTÁ VACÍA
+        async function cargarPlantillaBaseActual() {
+            const plantilla = plantillasBase[moduloActivo];
+            if(!plantilla) { alert("Este módulo no posee una plantilla base registrada; añade conceptos libres."); return; }
+            
+            for(let item of plantilla) {
+                await _supabase.from('conceptos_padre').insert([{ 
+                    modulo_key: moduloActivo, 
+                    cliente_id: getClienteId(), 
+                    texto: item.txt, 
+                    posicion_fila: item.pos, 
+                    pilar_transversal: item.pilar,
+                    eval_manual: 'NR' 
+                }]);
+            }
+            loadAllData();
+        }
+
         function renderEditorModulo() {
             const container = document.getElementById('module-editor-container');
             const modInfo = listadoModulos.find(m => m.key === moduloActivo);
@@ -335,16 +401,17 @@
 
             container.innerHTML = `
                 <div class="module-editor-header">
-                    <span>MÓDULO: ${modInfo.name.toUpperCase()} (${modInfo.block.toUpperCase()})</span>
-                    <button class="btn-action" style="background:#22c55e;" onclick="addParentCloud()">➕ Requerimiento Base</button>
+                    <span>MÓDULO: ${modInfo.name.toUpperCase()}</span>
+                    <button class="btn-action" style="background:#22c55e;" onclick="addParentCloud()">➕ Concepto Libre</button>
                 </div>
                 <table style="margin-top:10px;">
                     <thead>
                         <tr>
-                            <th style="width: 15%">Posición en Matriz</th>
-                            <th style="width: 45%">Concepto Evaluado</th>
-                            <th style="width: 20%">Estatus Eslabón</th>
-                            <th style="width: 20%">Acciones</th>
+                            <th style="width: 12%">Posición</th>
+                            <th style="width: 15%">Pilar Transversal</th>
+                            <th style="width: 43%">Concepto Evaluado</th>
+                            <th style="width: 15%">Estatus</th>
+                            <th style="width: 15%">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-editor"></tbody>
@@ -353,7 +420,7 @@
 
             const tbody = document.getElementById('tbody-editor');
             if(filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; color:var(--secondary)">No hay conceptos cargados en la nube para el cliente en este módulo.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="padding:20px; color:var(--secondary)">Módulo vacío. Presiona "Forzar Semilla Base" arriba para importar su estructura o añade un concepto libre.</td></tr>`;
                 return;
             }
 
@@ -365,6 +432,11 @@
                     <td>
                         <select onchange="updateParentPos(${parent.id}, this.value)">
                             ${[1,2,3,4,5,6,7,8,9].map(n => `<option value="pos_${n}" ${parent.posicion_fila===`pos_${n}`?'selected':''}>Pos ${n}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <select onchange="updateParentPilar(${parent.id}, this.value)">
+                            ${['Gobernanza','Alineación','Cultura','Tecnología'].map(p => `<option value="${p}" ${parent.pilar_transversal===p?'selected':''}>${p}</option>`).join('')}
                         </select>
                     </td>
                     <td><input type="text" value="${parent.texto || ''}" onchange="updateParentText(${parent.id}, this.value)"></td>
@@ -389,7 +461,7 @@
                         const trC = document.createElement('tr');
                         trC.className = "row-child";
                         trC.innerHTML = `
-                            <td>↳ H-${child.id}</td>
+                            <td colspan="2">↳ H-${child.id}</td>
                             <td><input type="text" value="${child.texto || ''}" onchange="updateChildText(${child.id}, this.value)"></td>
                             <td>
                                 <select class="badge-${child.eval}" onchange="updateChildEval(${child.id}, this.value)">
@@ -408,7 +480,6 @@
             });
         }
 
-        // CONTROL DE PESTAÑAS DINÁMICAS
         function switchTab(e, tabId, blockName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -418,10 +489,8 @@
             if(blockName !== '') {
                 bloqueActivo = blockName;
                 const filtrados = listadoModulos.filter(m => m.block === blockName);
-                
                 const selector = document.getElementById('selector-modulo-block');
                 selector.innerHTML = filtrados.map(m => `<option value="${m.key}">${m.name}</option>`).join('');
-                
                 moduloActivo = filtrados[0].key;
                 renderEditorModulo();
             }
@@ -434,16 +503,17 @@
 
         // ACCIONES CLOUD
         async function addParentCloud() {
-            await _supabase.from('conceptos_padre').insert([{ modulo_key: moduloActivo, cliente_id: getClienteId(), texto: 'Nuevo Requerimiento', posicion_fila: 'pos_1', eval_manual: 'NR' }]);
+            await _supabase.from('conceptos_padre').insert([{ modulo_key: moduloActivo, cliente_id: getClienteId(), texto: 'Concepto Personalizado Libre', posicion_fila: 'pos_1', pilar_transversal: 'Gobernanza', eval_manual: 'NR' }]);
             loadAllData();
         }
         async function addChildCloud(padreId) {
-            await _supabase.from('subconceptos_hijo').insert([{ padre_id: padreId, texto: 'Nuevo Sublineamiento', eval: 'NR' }]);
+            await _supabase.from('subconceptos_hijo').insert([{ padre_id: padreId, texto: 'Nuevo Sublineamiento Específico', eval: 'NR' }]);
             loadAllData();
         }
         async function updateChildEval(id, val) { await _supabase.from('subconceptos_hijo').update({ eval: val }).eq('id', id); loadAllData(); }
         async function updateParentEvalManual(id, val) { await _supabase.from('conceptos_padre').update({ eval_manual: val }).eq('id', id); loadAllData(); }
         async function updateParentPos(id, pos) { await _supabase.from('conceptos_padre').update({ posicion_fila: pos }).eq('id', id); loadAllData(); }
+        async function updateParentPilar(id, pil) { await _supabase.from('conceptos_padre').update({ pilar_transversal: pil }).eq('id', id); loadAllData(); }
         async function updateParentText(id, txt) { await _supabase.from('conceptos_padre').update({ texto: txt }).eq('id', id); }
         async function updateChildText(id, txt) { await _supabase.from('subconceptos_hijo').update({ texto: txt }).eq('id', id); }
 
