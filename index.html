@@ -81,8 +81,8 @@
         .progress-bar-fill { height: 100%; background: var(--fi-color); width: 0%; transition: width 0.4s ease; }
 
         /* TABS */
-        .tabs-container { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); }
-        .tab-btn { background: #f8fafc; border: 1px solid var(--border-color); padding: 10px 16px; font-weight: 600; color: var(--secondary); cursor: pointer; border-radius: 6px 6px 0 0; }
+        .tabs-container { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; }
+        .tab-btn { background: #f8fafc; border: 1px solid var(--border-color); padding: 10px 14px; font-weight: 600; color: var(--secondary); cursor: pointer; border-radius: 6px 6px 0 0; }
         .tab-btn.active { color: white; background: var(--primary); border-color: var(--primary); }
         .tab-content { display: none; } 
         .tab-content.active { display: block; }
@@ -123,6 +123,8 @@
         .row-child td:first-child { padding-left: 20px; text-align: left; }
         .module-editor-header { background-color: #0f172a; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-radius: 6px 6px 0 0; margin-top: 15px; }
         .btn-action { padding: 4px 8px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; color: white; background: #3b71ca; }
+        
+        .selector-modulo-inline { background: #1e293b; color: white; border: 1px solid #475569; padding: 4px; border-radius: 4px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -164,24 +166,21 @@
         </div>
 
         <div class="tabs-container">
-            <button class="tab-btn active" onclick="switchTab(event, 'tab-matriz')">📊 1. Dashboard Principal</button>
-            <button class="tab-btn" onclick="switchTab(event, 'tab-editor')">⚙️ 2. Editor de Lineamientos (Tráfico)</button>
+            <button class="tab-btn active" onclick="switchTab(event, 'tab-matriz', '')">📊 1. Dashboard Principal</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'nucleares')">📦 2. Módulos Nucleares</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'financieros')">💰 3. Módulos Financieros</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'auxiliares')">⚙️ 4. Módulos Auxiliares</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'prosuite')">🚀 5. Prosuite</button>
         </div>
 
         <div id="tab-matriz" class="tab-content active">
             <div class="matrices-layout">
-                
                 <div class="matrix-box">
                     <div class="matrix-title">Matriz Visual Diagnóstica (Líneas / Conceptos Principales)</div>
                     <div style="overflow-x: auto;">
                         <table>
-                            <thead>
-                                <tr id="matrix-header-row">
-                                    <th>Línea</th>
-                                    </tr>
-                            </thead>
-                            <tbody id="matrix-body">
-                                </tbody>
+                            <thead><tr id="matrix-header-row"><th>Línea</th></tr></thead>
+                            <tbody id="matrix-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -190,12 +189,7 @@
                     <div class="matrix-title">Matriz de Impacto Transversal</div>
                     <table>
                         <thead>
-                            <tr>
-                                <th>Eje / Pilar</th>
-                                <th style="color:var(--ny-color)">CRÍTICO</th>
-                                <th style="color:var(--pi-color)">ALTO</th>
-                                <th style="color:var(--li-color)">MEDIO</th>
-                            </tr>
+                            <tr><th>Eje / Pilar</th><th style="color:var(--ny-color)">CRÍTICO</th><th style="color:var(--pi-color)">ALTO</th><th style="color:var(--li-color)">MEDIO</th></tr>
                         </thead>
                         <tbody>
                             <tr><td class="col-fixed-left">Gobernanza</td><td id="t-gob-crit">0</td><td id="t-gob-alt">0</td><td id="t-gob-med">0</td></tr>
@@ -205,23 +199,24 @@
                         </tbody>
                     </table>
                 </div>
-
             </div>
         </div>
 
-        <div id="tab-editor" class="tab-content">
+        <div id="tab-bloques" class="tab-content">
+            <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                <label style="font-weight: bold; font-size: 12px;">Selecciona el Módulo Específico a Evaluar:</label>
+                <select id="selector-modulo-block" class="selector-modulo-inline" onchange="seleccionarModuloInterno(this.value)"></select>
+            </div>
             <div id="module-editor-container"></div>
         </div>
 
     </div>
 
     <script>
-        // === CREDENCIALES CLOUD SUPABASE ===
         const supabaseUrl = 'https://ezzuuffneepigvinjqxi.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enV1ZmZuZWVwaWd2aW5qcXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNDQyMjYsImV4cCI6MjA5ODYyMDIyNn0.Tv3yxI0s5iyw53F4DQN7iLMB4v_9ZUnhvtAQpKbVG5w';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Mapeo completo de tus 20 módulos originales
         const listadoModulos = [
             { key: 'trafico', name: 'Tráfico', block: 'nucleares' },
             { key: 'facturacion', name: 'Facturación', block: 'nucleares' },
@@ -246,14 +241,14 @@
         ];
 
         let baseDatosLocal = [];
+        let bloqueActivo = 'nucleares';
+        let moduloActivo = 'trafico';
 
         function getClienteId() { return document.getElementById('client-id-input').value.trim() || 'demo'; }
 
-        // CARGAR TODO DESDE CLOUD
         async function loadAllData() {
             const statusEl = document.getElementById('cloud-status');
-            statusEl.innerText = "🔄 Descargando matriz...";
-            
+            statusEl.innerText = "🔄 Sincronizando nubes...";
             try {
                 let { data: conceptos, error } = await _supabase
                     .from('conceptos_padre')
@@ -264,7 +259,6 @@
                 baseDatosLocal = conceptos || [];
 
                 calcularYRenderizarTodo();
-
                 statusEl.innerText = "🟢 Conectado Cloud";
                 statusEl.style.color = "#16a34a";
             } catch (err) {
@@ -274,11 +268,9 @@
             }
         }
 
-        // REGLA DEL ESLABÓN MÁS DÉBIL
         function getMaturity(parent) {
             if (!parent) return "NR";
             if (!parent.subconceptos_hijo || parent.subconceptos_hijo.length === 0) return parent.eval_manual || "NR";
-            
             let hasNY = false, hasPI = false, hasLI = false, fiCount = 0;
             parent.subconceptos_hijo.forEach(h => {
                 if (h.eval === "NY") hasNY = true;
@@ -286,7 +278,6 @@
                 else if (h.eval === "LI") hasLI = true;
                 else if (h.eval === "FI") fiCount++;
             });
-
             if (hasNY) return "NY";
             if (hasPI) return "PI";
             if (hasLI || (fiCount > 0 && fiCount < parent.subconceptos_hijo.length)) return "LI";
@@ -300,44 +291,28 @@
             actualizarDashboardGlobal();
         }
 
-        // 1. RENDERIZAR LA MATRIZ VISUAL DIAGNÓSTICA (CUADRÍCULA 2D)
         function renderMatrizVisual() {
             const headerRow = document.getElementById('matrix-header-row');
             headerRow.innerHTML = '<th>Línea</th>' + listadoModulos.map(m => `<th>${m.name}</th>`).join('');
-
             const tbody = document.getElementById('matrix-body');
             tbody.innerHTML = '';
 
-            // Renderizar de Pos 1 a Pos 9
             for (let i = 1; i <= 9; i++) {
                 const posKey = `pos_${i}`;
                 const tr = document.createElement('tr');
-                
                 let htmlCells = `<td class="col-fixed-left">Pos ${i}</td>`;
-                
                 listadoModulos.forEach(mod => {
-                    // Buscar si existe un requerimiento cargado en Supabase para este módulo en esta posición
-                    const padre = baseDatosLocal.find(p => p.modulo_key === mod.key && (p.posicion_fila === posKey || (!p.posicion_fila && i===1 && mod.key==='trafico')));
+                    const padre = baseDatosLocal.find(p => p.modulo_key === mod.key && p.posicion_fila === posKey);
                     const status = padre ? getMaturity(padre) : "NR";
-                    
                     htmlCells += `<td><span class="cell-badge badge-${status}">${status}</span></td>`;
                 });
-                
                 tr.innerHTML = htmlCells;
                 tbody.appendChild(tr);
             }
-
-            // Simulación estética fija para la matriz transversal de impacto derecho
-            document.getElementById('t-gob-crit').className = "badge-NY"; document.getElementById('t-gob-crit').innerText = "2";
-            document.getElementById('t-ali-crit').className = "badge-PI"; document.getElementById('t-ali-crit').innerText = "2";
-            document.getElementById('t-cul-crit').className = "badge-LI"; document.getElementById('t-cul-crit').innerText = "1";
-            document.getElementById('t-tec-crit').className = "badge-NY"; document.getElementById('t-tec-crit').innerText = "2";
         }
 
-        // 2. ACTUALIZAR LOS PORCENTAJES DEL DASHBOARD
         function actualizarDashboardGlobal() {
             const bloques = { nucleares: { total: 0, fi: 0 }, financieros: { total: 0, fi: 0 }, auxiliares: { total: 0, fi: 0 }, prosuite: { total: 0, fi: 0 } };
-
             listadoModulos.forEach(mod => {
                 const padresModulo = baseDatosLocal.filter(p => p.modulo_key === mod.key);
                 padresModulo.forEach(p => {
@@ -346,8 +321,6 @@
                     if (status === 'FI') bloques[mod.block].fi++;
                 });
             });
-
-            // Actualizar interfaz visual
             for (const b in bloques) {
                 const pct = bloques[b].total > 0 ? Math.round((bloques[b].fi / bloques[b].total) * 100) : 0;
                 document.getElementById(`lbl-pct-${b}`).innerText = `${pct}%`;
@@ -355,22 +328,22 @@
             }
         }
 
-        // 3. RENDERIZAR TABLA DE EDICIÓN (SOLO MÓDULO TRÁFICO)
         function renderEditorModulo() {
             const container = document.getElementById('module-editor-container');
-            const traficoData = baseDatosLocal.filter(p => p.modulo_key === 'trafico');
+            const modInfo = listadoModulos.find(m => m.key === moduloActivo);
+            const filtrados = baseDatosLocal.filter(p => p.modulo_key === moduloActivo);
 
             container.innerHTML = `
                 <div class="module-editor-header">
-                    <span>SECCIÓN DE AUDITORÍA: 1. TRÁFICO Y EMBARQUES</span>
-                    <button class="btn-action" style="background:#22c55e;" onclick="addParentCloud()">➕ Añadir Requerimiento Base</button>
+                    <span>MÓDULO: ${modInfo.name.toUpperCase()} (${modInfo.block.toUpperCase()})</span>
+                    <button class="btn-action" style="background:#22c55e;" onclick="addParentCloud()">➕ Requerimiento Base</button>
                 </div>
                 <table style="margin-top:10px;">
                     <thead>
                         <tr>
-                            <th style="width: 10%">ID / Posición</th>
-                            <th style="width: 50%">Concepto Evaluado</th>
-                            <th style="width: 20%">Estatus (Eslabón Crítico)</th>
+                            <th style="width: 15%">Posición en Matriz</th>
+                            <th style="width: 45%">Concepto Evaluado</th>
+                            <th style="width: 20%">Estatus Eslabón</th>
                             <th style="width: 20%">Acciones</th>
                         </tr>
                     </thead>
@@ -379,19 +352,18 @@
             `;
 
             const tbody = document.getElementById('tbody-editor');
-            if(traficoData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="color:var(--secondary); padding:20px;">No hay requerimientos en la nube para este cliente. Agrega uno arriba.</td></tr>`;
+            if(filtrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; color:var(--secondary)">No hay conceptos cargados en la nube para el cliente en este módulo.</td></tr>`;
                 return;
             }
 
-            traficoData.forEach(parent => {
+            filtrados.forEach(parent => {
                 const status = getMaturity(parent);
                 const trP = document.createElement('tr');
                 trP.className = "row-parent";
                 trP.innerHTML = `
                     <td>
-                        P-${parent.id} 
-                        <select style="width:65px; display:inline; margin-left:5px;" onchange="updateParentPos(${parent.id}, this.value)">
+                        <select onchange="updateParentPos(${parent.id}, this.value)">
                             ${[1,2,3,4,5,6,7,8,9].map(n => `<option value="pos_${n}" ${parent.posicion_fila===`pos_${n}`?'selected':''}>Pos ${n}</option>`).join('')}
                         </select>
                     </td>
@@ -436,36 +408,44 @@
             });
         }
 
-        // OPERACIONES EN LA NUBE
-        async function addParentCloud() {
-            await _supabase.from('conceptos_padre').insert([{ modulo_key: 'trafico', cliente_id: getClienteId(), texto: 'Nuevo Requerimiento', posicion_fila: 'pos_1', eval_manual: 'NR' }]);
-            loadAllData();
-        }
-        async function addChildCloud(padreId) {
-            await _supabase.from('subconceptos_hijo').insert([{ padre_id: padreId, texto: 'Nuevo Lineamiento Específico', eval: 'NR' }]);
-            loadAllData();
-        }
-        async function updateChildEval(id, val) {
-            await _supabase.from('subconceptos_hijo').update({ eval: val }).eq('id', id);
-            loadAllData();
-        }
-        async function updateParentEvalManual(id, val) {
-            await _supabase.from('conceptos_padre').update({ eval_manual: val }).eq('id', id);
-            loadAllData();
-        }
-        async function updateParentPos(id, pos) {
-            await _supabase.from('conceptos_padre').update({ posicion_fila: pos }).eq('id', id);
-            loadAllData();
-        }
-        async function updateParentText(id, txt) { await _supabase.from('conceptos_padre').update({ texto: txt }).eq('id', id); }
-        async function updateChildText(id, txt) { await _supabase.from('subconceptos_hijo').update({ texto: txt }).eq('id', id); }
-
-        function switchTab(e, tabId) {
+        // CONTROL DE PESTAÑAS DINÁMICAS
+        function switchTab(e, tabId, blockName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             e.currentTarget.classList.add('active');
+
+            if(blockName !== '') {
+                bloqueActivo = blockName;
+                const filtrados = listadoModulos.filter(m => m.block === blockName);
+                
+                const selector = document.getElementById('selector-modulo-block');
+                selector.innerHTML = filtrados.map(m => `<option value="${m.key}">${m.name}</option>`).join('');
+                
+                moduloActivo = filtrados[0].key;
+                renderEditorModulo();
+            }
         }
+
+        function seleccionarModuloInterno(modKey) {
+            moduloActivo = modKey;
+            renderEditorModulo();
+        }
+
+        // ACCIONES CLOUD
+        async function addParentCloud() {
+            await _supabase.from('conceptos_padre').insert([{ modulo_key: moduloActivo, cliente_id: getClienteId(), texto: 'Nuevo Requerimiento', posicion_fila: 'pos_1', eval_manual: 'NR' }]);
+            loadAllData();
+        }
+        async function addChildCloud(padreId) {
+            await _supabase.from('subconceptos_hijo').insert([{ padre_id: padreId, texto: 'Nuevo Sublineamiento', eval: 'NR' }]);
+            loadAllData();
+        }
+        async function updateChildEval(id, val) { await _supabase.from('subconceptos_hijo').update({ eval: val }).eq('id', id); loadAllData(); }
+        async function updateParentEvalManual(id, val) { await _supabase.from('conceptos_padre').update({ eval_manual: val }).eq('id', id); loadAllData(); }
+        async function updateParentPos(id, pos) { await _supabase.from('conceptos_padre').update({ posicion_fila: pos }).eq('id', id); loadAllData(); }
+        async function updateParentText(id, txt) { await _supabase.from('conceptos_padre').update({ texto: txt }).eq('id', id); }
+        async function updateChildText(id, txt) { await _supabase.from('subconceptos_hijo').update({ texto: txt }).eq('id', id); }
 
         window.onload = loadAllData;
     </script>
