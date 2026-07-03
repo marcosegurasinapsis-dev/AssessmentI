@@ -60,7 +60,7 @@
         .client-bar input { width: 150px; background: #0f172a; color: white; border: 1px solid #475569; padding: 5px 10px; border-radius: var(--radius-md); font-weight: bold; }
         .status-indicator { margin-left: auto; font-weight: bold; color: #38bdf8; display: flex; align-items: center; gap: 6px; }
 
-        /* BLOQUES DE PROGRESO */
+        /* BLOQUES DE PROGRESO DE ADOPCIÓN */
         .top-dashboard-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -78,30 +78,6 @@
         .progress-bar-bg { background: #e2e8f0; height: 6px; border-radius: 3px; margin-top: 6px; overflow: hidden; }
         .progress-bar-fill { height: 100%; background: var(--fi-color); width: 0%; transition: width 0.4s ease; }
 
-        /* NUEVA/RESTAURADA GRÁFICA PRINCIPAL HORIZONTAL DE ESLABONES CRÍTICOS */
-        .critic-chart-container {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            border-radius: var(--radius-lg);
-            margin-bottom: 25px;
-        }
-        .critic-chart-title { font-weight: bold; font-size: 12px; margin-bottom: 10px; color: var(--primary); display: flex; justify-content: space-between; }
-        .critic-grid {
-            display: grid;
-            grid-template-columns: repeat(20, 1fr);
-            gap: 4px;
-        }
-        .critic-box-cell {
-            text-align: center;
-            border-radius: 4px;
-            padding: 8px 2px;
-            font-weight: 800;
-            font-size: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .critic-box-label { font-size: 8px; font-weight: 600; color: #64748b; margin-top: 4px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
         /* TABS */
         .tabs-container { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; }
         .tab-btn { background: #f8fafc; border: 1px solid var(--border-color); padding: 10px 14px; font-weight: 600; color: var(--secondary); cursor: pointer; border-radius: 6px 6px 0 0; }
@@ -109,11 +85,13 @@
         .tab-content { display: none; } 
         .tab-content.active { display: block; }
         
+        /* DISTRIBUCIÓN LADO A LADO RECONSTRUIDA */
         .matrices-layout {
             display: grid;
             grid-template-columns: 3fr 1fr;
             gap: 20px;
             margin-bottom: 25px;
+            align-items: start;
         }
         .matrix-box {
             background: white;
@@ -122,21 +100,33 @@
             overflow: hidden;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.02);
         }
-        .matrix-title { background: #3b71ca; color: white; padding: 10px 15px; font-weight: bold; font-size: 12px; }
+        .matrix-title { background: #0f172a; color: white; padding: 10px 15px; font-weight: bold; font-size: 12px; }
         
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 6px 8px; border: 1px solid var(--border-color); text-align: center; }
+        th, td { padding: 8px; border: 1px solid var(--border-color); text-align: center; }
         th { background: #f8fafc; color: #475569; font-size: 9px; text-transform: uppercase; font-weight: 700; }
         
-        .col-fixed-left { text-align: left; font-weight: bold; background: #f8fafc; width: 80px; }
+        .col-fixed-left { text-align: left; font-weight: bold; background: #f8fafc; color: #1e293b; }
         
+        /* ESTILIZACIÓN DE LA MATRIZ DE IMPACTO TRANSVERSAL ORIGINAL */
+        .transversal-table td.data-cell {
+            font-size: 13px;
+            font-weight: bold;
+            background-color: #fff1f2;
+            color: #991b1b;
+            border: 2px solid #ef4444 !important; /* Bordes rojos idénticos a la captura */
+        }
+        .transversal-table th.header-critico { color: #dc2626 !important; font-weight: 900; }
+        .transversal-table th.header-alto { color: #f97316 !important; font-weight: 900; }
+        .transversal-table th.header-medio { color: #b45309 !important; font-weight: 900; }
+
         /* BADGES */
         .cell-badge { display: block; padding: 4px; font-weight: bold; border-radius: 4px; text-align: center; text-transform: uppercase; font-size: 10px; }
-        .badge-FI { background-color: #f0fdf4 !important; color: var(--fi-color) !important; border: 1px solid #bbf7d0; }
-        .badge-LI { background-color: #fef9c3 !important; color: #a16207 !important; border: 1px solid #fef08a; }
-        .badge-PI { background-color: #fff7ed !important; color: var(--pi-color) !important; border: 1px solid #ffedd5; }
-        .badge-NY { background-color: #fef2f2 !important; color: var(--ny-color) !important; border: 1px solid #fecaca; }
-        .badge-NR { background-color: #e2e8f0 !important; color: #475569 !important; border: 1px solid #cbd5e1; }
+        .badge-FI { background-color: #f0fdf4 !important; color: var(--fi-color) !important; }
+        .badge-LI { background-color: #fef9c3 !important; color: #a16207 !important; }
+        .badge-PI { background-color: #fff7ed !important; color: var(--pi-color) !important; }
+        .badge-NY { background-color: #fef2f2 !important; color: var(--ny-color) !important; }
+        .badge-NR { background-color: #e2e8f0 !important; color: #475569 !important; }
 
         .row-parent { background-color: #f1f5f9; font-weight: bold; border-left: 4px solid #3b71ca; }
         .row-child td:first-child { padding-left: 20px; text-align: left; }
@@ -184,33 +174,47 @@
             </div>
         </div>
 
-        <div class="critic-chart-container">
-            <div class="critic-chart-title">
-                <span>Eslabón Crítico de Madurez Actual por Módulo</span>
-                <span style="font-size:10px; color:var(--secondary)">Calculado en tiempo real desde Supabase</span>
-            </div>
-            <div class="critic-grid" id="critic-dashboard-row">
-                </div>
-        </div>
-
         <div class="tabs-container">
             <button class="tab-btn active" onclick="switchTab(event, 'tab-matriz', '')">📊 1. Dashboard Principal</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'nucleares')">📦 2. Módulos Nucleares</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'financieros')">💰 3. Módulos Financieros</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'auxiliares')">⚙️ 4. Módulos Auxiliares</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'prosuite')">🚀 5. Prosuite</button>
-            <button class="tab-btn" onclick="switchTab(event, 'tab-transversal', '')">🎯 6. Diagnóstico Transversal</button>
         </div>
 
         <div id="tab-matriz" class="tab-content active">
-            <div class="matrix-box">
-                <div class="matrix-title">Matriz Visual Diagnóstica (Líneas / Conceptos Principales)</div>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead><tr id="matrix-header-row"><th>Línea</th></tr></thead>
-                        <tbody id="matrix-body"></tbody>
+            <div class="matrices-layout">
+                
+                <div class="matrix-box">
+                    <div class="matrix-title">Matriz Visual Diagnóstica (Líneas / Conceptos Principales)</div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead><tr id="matrix-header-row"><th>Línea</th></tr></thead>
+                            <tbody id="matrix-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="matrix-box">
+                    <div class="matrix-title">Matriz de Impacto Transversal</div>
+                    <table class="transversal-table">
+                        <thead>
+                            <tr>
+                                <th>Eje / Pilar</th>
+                                <th class="header-critico">CRÍTICO</th>
+                                <th class="header-alto">ALTO</th>
+                                <th class="header-medio">MEDIO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="col-fixed-left">Gobernanza</td><td id="t-gob-ny" class="data-cell">0</td><td id="t-gob-pi" class="data-cell">0</td><td id="t-gob-li" class="data-cell">0</td></tr>
+                            <tr><td class="col-fixed-left">Alineación</td><td id="t-ali-ny" class="data-cell">0</td><td id="t-ali-pi" class="data-cell">0</td><td id="t-ali-li" class="data-cell">0</td></tr>
+                            <tr><td class="col-fixed-left">Cultura</td><td id="t-cul-ny" class="data-cell">0</td><td id="t-cul-pi" class="data-cell">0</td><td id="t-cul-li" class="data-cell">0</td></tr>
+                            <tr><td class="col-fixed-left">Tecnología</td><td id="t-tec-ny" class="data-cell">0</td><td id="t-tec-pi" class="data-cell">0</td><td id="t-tec-li" class="data-cell">0</td></tr>
+                        </tbody>
                     </table>
                 </div>
+
             </div>
         </div>
 
@@ -221,29 +225,6 @@
                 <button class="btn-action" style="background:#ea580c" onclick="cargarPlantillaBaseActual()">🌱 Forzar Semilla Base</button>
             </div>
             <div id="module-editor-container"></div>
-        </div>
-
-        <div id="tab-transversal" class="tab-content">
-            <div class="matrix-box" style="max-width: 900px; margin: 0 auto;">
-                <div class="matrix-title">Matriz de Impacto Transversal (Eje Estratégico por Severidad)</div>
-                <table style="margin-top: 10px;">
-                    <thead>
-                        <tr>
-                            <th>Eje / Pilar Transversal</th>
-                            <th style="color:var(--ny-color); font-weight: bold;">CRÍTICO (NY)</th>
-                            <th style="color:var(--pi-color); font-weight: bold;">ALTO (PI)</th>
-                            <th style="color:var(--li-color); font-weight: bold;">MEDIO (LI)</th>
-                            <th style="color:var(--fi-color); font-weight: bold;">OPTIMIZADO (FI)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td class="col-fixed-left">Gobernanza</td><td id="t-gob-ny" class="badge-NY">0</td><td id="t-gob-pi" class="badge-PI">0</td><td id="t-gob-li" class="badge-LI">0</td><td id="t-gob-fi" class="badge-FI">0</td></tr>
-                        <tr><td class="col-fixed-left">Alineación</td><td id="t-ali-ny" class="badge-NY">0</td><td id="t-ali-pi" class="badge-PI">0</td><td id="t-ali-li" class="badge-LI">0</td><td id="t-ali-fi" class="badge-FI">0</td></tr>
-                        <tr><td class="col-fixed-left">Cultura</td><td id="t-cul-ny" class="badge-NY">0</td><td id="t-cul-pi" class="badge-PI">0</td><td id="t-cul-li" class="badge-LI">0</td><td id="t-cul-fi" class="badge-FI">0</td></tr>
-                        <tr><td class="col-fixed-left">Tecnología</td><td id="t-tec-ny" class="badge-NY">0</td><td id="t-tec-pi" class="badge-PI">0</td><td id="t-tec-li" class="badge-LI">0</td><td id="t-tec-fi" class="badge-FI">0</td></tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
 
     </div>
@@ -290,10 +271,7 @@
                 { pos: 'pos_2', txt: 'Descuentos de Combustibles y Casetas', pilar: 'Alineación' }
             ],
             vigilancia: [{ pos: 'pos_1', txt: 'Bitácora Digital de Accesos de Unidades', pilar: 'Cultura' }],
-            rastreo: [{ pos: 'pos_1', txt: 'Paros de Motor Automatizados ante Desvíos', pilar: 'Tecnología' }],
-            admin: [{ pos: 'pos_1', txt: 'Captura unificada de solicitudes de clientes', pilar: 'Gobernanza' }],
-            compras: [{ pos: 'pos_1', txt: 'Órdenes de compra validadas contra almacén', pilar: 'Alineación' }],
-            almacen: [{ pos: 'pos_1', txt: 'Conteos cíclicos con terminales digitales', pilar: 'Tecnología' }]
+            rastreo: [{ pos: 'pos_1', txt: 'Paros de Motor Automatizados ante Desvíos', pilar: 'Tecnología' }]
         };
 
         let baseDatosLocal = [];
@@ -327,63 +305,23 @@
         function getMaturity(parent) {
             if (!parent) return "NR";
             if (!parent.subconceptos_hijo || parent.subconceptos_hijo.length === 0) return parent.eval_manual || "NR";
-            let hasNY = false, hasPI = false, hasLI = false, fiCount = 0;
+            let hasNY = false, hasPI = false, hasLI = false;
             parent.subconceptos_hijo.forEach(h => {
                 if (h.eval === "NY") hasNY = true;
                 else if (h.eval === "PI") hasPI = true;
                 else if (h.eval === "LI") hasLI = true;
-                else if (h.eval === "FI") fiCount++;
             });
-            if (hasNY) return "NY";
-            if (hasPI) return "PI";
-            if (hasLI || (fiCount > 0 && fiCount < parent.subconceptos_hijo.length)) return "LI";
-            if (fiCount === parent.subconceptos_hijo.length) return "FI";
-            return "NR";
-        }
-
-        // NUEVO: DETERMINA EL PEOR ESTATUS GENERAL DE TODO UN MÓDULO (REGLA DEL ESLABÓN)
-        function getModuloMaturityStatus(modKey) {
-            const padres = baseDatosLocal.filter(p => p.modulo_key === modKey);
-            if (padres.length === 0) return "NR";
-            
-            let hasNY = false, hasPI = false, hasLI = false, hasFI = false;
-            padres.forEach(p => {
-                const mat = getMaturity(p);
-                if (mat === "NY") hasNY = true;
-                if (mat === "PI") hasPI = true;
-                if (mat === "LI") hasLI = true;
-                if (mat === "FI") hasFI = true;
-            });
-            
             if (hasNY) return "NY";
             if (hasPI) return "PI";
             if (hasLI) return "LI";
-            if (hasFI) return "FI";
-            return "NR";
+            return "FI";
         }
 
         function calcularYRenderizarTodo() {
-            renderEslabonesHorizontales();
             renderMatrizVisual();
             renderEditorModulo();
             actualizarDashboardGlobal();
             calcularMatrizTransversal();
-        }
-
-        // 📊 REDIBUJAR LA FILA CON LOS 20 BLOQUES HORIZONTALES ORIGINALES DE LA CABECERA
-        function renderEslabonesHorizontales() {
-            const container = document.getElementById('critic-dashboard-row');
-            container.innerHTML = '';
-            
-            listadoModulos.forEach(mod => {
-                const status = getModuloMaturityStatus(mod.key);
-                const cell = document.createElement('div');
-                cell.innerHTML = `
-                    <div class="critic-box-cell badge-${status}">${status}</div>
-                    <span class="critic-box-label" title="${mod.name}">${mod.name}</span>
-                `;
-                container.appendChild(cell);
-            });
         }
 
         function renderMatrizVisual() {
@@ -407,7 +345,8 @@
         }
 
         function calcularMatrizTransversal() {
-            const ejes = { Gobernanza: { ny:0, pi:0, li:0, fi:0 }, Alineación: { ny:0, pi:0, li:0, fi:0 }, Cultura: { ny:0, pi:0, li:0, fi:0 }, Tecnología: { ny:0, pi:0, li:0, fi:0 } };
+            const ejes = { Gobernanza: { ny:0, pi:0, li:0 }, Alineación: { ny:0, pi:0, li:0 }, Cultura: { ny:0, pi:0, li:0 }, Tecnología: { ny:0, pi:0, li:0 } };
+            
             baseDatosLocal.forEach(p => {
                 const pilar = p.pilar_transversal || 'Gobernanza';
                 const status = getMaturity(p);
@@ -415,16 +354,15 @@
                     if(status === 'NY') ejes[pilar].ny++;
                     if(status === 'PI') ejes[pilar].pi++;
                     if(status === 'LI') ejes[pilar].li++;
-                    if(status === 'FI') ejes[pilar].fi++;
                 }
             });
+
             const codigos = { Gobernanza: 'gob', Alineación: 'ali', Cultura: 'cul', Tecnología: 'tec' };
             for(let ej in ejes) {
                 let c = codigos[ej];
                 document.getElementById(`t-${c}-ny`).innerText = ejes[ej].ny;
                 document.getElementById(`t-${c}-pi`).innerText = ejes[ej].pi;
                 document.getElementById(`t-${c}-li`).innerText = ejes[ej].li;
-                document.getElementById(`t-${c}-fi`).innerText = ejes[ej].fi;
             }
         }
 
@@ -447,7 +385,7 @@
 
         async function cargarPlantillaBaseActual() {
             const plantilla = plantillasBase[moduloActivo];
-            if(!plantilla) { alert("Este módulo no posee una plantilla base registrada; añade conceptos libres."); return; }
+            if(!plantilla) { alert("Este módulo no posee una plantilla base registrada."); return; }
             for(let item of plantilla) {
                 await _supabase.from('conceptos_padre').insert([{ modulo_key: moduloActivo, cliente_id: getClienteId(), texto: item.txt, posicion_fila: item.pos, pilar_transversal: item.pilar, eval_manual: 'NR' }]);
             }
@@ -480,7 +418,7 @@
 
             const tbody = document.getElementById('tbody-editor');
             if(filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="padding:20px; color:var(--secondary)">Módulo vacío. Presiona "Forzar Semilla Base" arriba para importar su estructura o añade un concepto libre.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="padding:20px; color:var(--secondary)">Módulo vacío. Usa "Forzar Semilla Base" o añade uno manual.</td></tr>`;
                 return;
             }
 
@@ -499,19 +437,8 @@
                             ${['Gobernanza','Alineación','Cultura','Tecnología'].map(p => `<option value="${p}" ${parent.pilar_transversal===p?'selected':''}>${p}</option>`).join('')}
                         </select>
                     </td>
-                    <td><input type="text" value="${parent.texto || ''}" onchange="updateParentText(${parent.id}, this.value)"></td>
-                    <td>
-                        ${parent.subconceptos_hijo && parent.subconceptos_hijo.length > 0 ? 
-                            `<span class="cell-badge badge-${status}">${status}</span>` :
-                            `<select class="badge-${status}" onchange="updateParentEvalManual(${parent.id}, this.value)">
-                                <option value="NR" ${status==='NR'?'selected':''}>NR</option>
-                                <option value="FI" ${status==='FI'?'selected':''}>FI</option>
-                                <option value="LI" ${status==='LI'?'selected':''}>LI</option>
-                                <option value="PI" ${status==='PI'?'selected':''}>PI</option>
-                                <option value="NY" ${status==='NY'?'selected':''}>NY</option>
-                            </select>`
-                        }
-                    </td>
+                    <td><input type="text" value="${parent.texto || ''}" onchange="updateParentText(${parent.id}, this.value)" style="width:90%"></td>
+                    <td><span class="cell-badge badge-${status}">${status}</span></td>
                     <td><button class="btn-action" onclick="addChildCloud(${parent.id})">➕ Sublineamiento</button></td>
                 `;
                 tbody.appendChild(trP);
@@ -522,7 +449,7 @@
                         trC.className = "row-child";
                         trC.innerHTML = `
                             <td colspan="2">↳ H-${child.id}</td>
-                            <td><input type="text" value="${child.texto || ''}" onchange="updateChildText(${child.id}, this.value)"></td>
+                            <td><input type="text" value="${child.texto || ''}" onchange="updateChildText(${child.id}, this.value)" style="width:90%"></td>
                             <td>
                                 <select class="badge-${child.eval}" onchange="updateChildEval(${child.id}, this.value)">
                                     <option value="NR" ${child.eval==='NR'?'selected':''}>NR</option>
@@ -570,7 +497,6 @@
             loadAllData();
         }
         async function updateChildEval(id, val) { await _supabase.from('subconceptos_hijo').update({ eval: val }).eq('id', id); loadAllData(); }
-        async function updateParentEvalManual(id, val) { await _supabase.from('conceptos_padre').update({ eval_manual: val }).eq('id', id); loadAllData(); }
         async function updateParentPos(id, pos) { await _supabase.from('conceptos_padre').update({ posicion_fila: pos }).eq('id', id); loadAllData(); }
         async function updateParentPilar(id, pil) { await _supabase.from('conceptos_padre').update({ pilar_transversal: pil }).eq('id', id); loadAllData(); }
         async function updateParentText(id, txt) { await _supabase.from('conceptos_padre').update({ texto: txt }).eq('id', id); }
