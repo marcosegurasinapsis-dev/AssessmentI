@@ -99,6 +99,7 @@
             border-radius: var(--radius-lg);
             overflow: hidden;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.02);
+            margin-bottom: 20px;
         }
         .matrix-title { background: #0f172a; color: white; padding: 10px 15px; font-weight: bold; font-size: 12px; }
         
@@ -127,6 +128,61 @@
         .badge-PI { background-color: #fff7ed !important; color: var(--pi-color) !important; }
         .badge-NY { background-color: #fef2f2 !important; color: var(--ny-color) !important; }
         .badge-NR { background-color: #e2e8f0 !important; color: #475569 !important; }
+
+        /* ESTILOS ESPECÍFICOS PARA LA PANTALLA DE DIAGNÓSTICO TRANSVERSAL (PESTALA 6) */
+        .framework-header {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: var(--radius-md);
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .eje-section-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 20px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .transversal-editor-table th {
+            font-size: 10px;
+            text-align: left;
+            padding: 10px;
+        }
+        .transversal-editor-table td {
+            text-align: left;
+            padding: 10px;
+            background: #ffffff;
+        }
+        .transversal-editor-table textarea {
+            width: 100%;
+            height: 45px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px;
+            font-family: inherit;
+            font-size: 11px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .transversal-editor-table select {
+            padding: 6px;
+            font-weight: bold;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            width: 100%;
+        }
+        .select-impact-critico { background-color: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+        .select-impact-alto { background-color: #fff7ed; color: #f97316; border-color: #fdba74; }
+        .select-impact-medio { background-color: #fef9c3; color: #b45309; border-color: #fde047; }
 
         .row-parent { background-color: #f1f5f9; font-weight: bold; border-left: 4px solid #3b71ca; }
         .row-child td:first-child { padding-left: 20px; text-align: left; }
@@ -180,7 +236,7 @@
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'financieros')">💰 3. Módulos Financieros</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'auxiliares')">⚙️ 4. Módulos Auxiliares</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'prosuite')">🚀 5. Prosuite</button>
-            <button class="tab-btn" onclick="switchTab(event, 'tab-transversal', '')">🎯 6. Diagnóstico Transversal</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-transversal', '')">📋 6. Diagnóstico Transversal</button>
         </div>
 
         <div id="tab-matriz" class="tab-content active">
@@ -197,7 +253,7 @@
                 </div>
 
                 <div class="matrix-box">
-                    <div class="matrix-title">Matriz de Impacto Transversal (Resumen)</div>
+                    <div class="matrix-title">Matriz de Impacto Transversal</div>
                     <table class="transversal-table">
                         <thead>
                             <tr>
@@ -207,8 +263,12 @@
                                 <th class="header-medio">MEDIO</th>
                             </tr>
                         </thead>
-                        <tbody id="transversal-body-home">
-                            </tbody>
+                        <tbody>
+                            <tr><td class="col-fixed-left">Gobernanza</td><td id="t-gob-ny" class="data-cell">0</td><td id="t-gob-pi" class="data-cell">0</td><td id="t-gob-li" class="data-cell">0</td></tr>
+                            <tr><td class="col-fixed-left">Alineación</td><td id="t-ali-ny" class="data-cell">0</td><td id="t-ali-pi" class="data-cell">0</td><td id="t-ali-li" class="data-cell">0</td></tr>
+                            <tr><td class="col-fixed-left">Cultura</td><td id="t-cul-ny" class="data-cell">0</td><td id="t-cul-pi" class="data-cell">0</td><td id="t-cul-li" class="data-cell">0</td></tr>
+                            <tr><td class="col-fixed-left">Tecnología</td><td id="t-tec-ny" class="data-cell">0</td><td id="t-tec-pi" class="data-cell">0</td><td id="t-tec-li" class="data-cell">0</td></tr>
+                        </tbody>
                     </table>
                 </div>
 
@@ -225,23 +285,12 @@
         </div>
 
         <div id="tab-transversal" class="tab-content">
-            <div style="max-width: 800px; margin: 0 auto;">
-                <div class="matrix-box">
-                    <div class="matrix-title">Mapeo Estratégico General: Diagnóstico Transversal Corporativo</div>
-                    <table class="transversal-table">
-                        <thead>
-                            <tr>
-                                <th>Eje / Pilar Estratégico</th>
-                                <th class="header-critico" style="font-size:12px;">CRÍTICO (NY)</th>
-                                <th class="header-alto" style="font-size:12px;">ALTO (PI)</th>
-                                <th class="header-medio" style="font-size:12px;">MEDIO (LI)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transversal-body-main">
-                            </tbody>
-                    </table>
-                </div>
+            <div class="framework-header">
+                📊 Framework de Diagnóstico Transversal e Inconsistencias Mapeadas
             </div>
+            
+            <div id="framework-ejes-container">
+                </div>
         </div>
 
     </div>
@@ -274,22 +323,31 @@
             { key: 'edi', name: 'EDI', block: 'prosuite' }
         ];
 
-        const plantillasBase = {
-            trafico: [
-                { pos: 'pos_1', txt: 'Control y Monitoreo de Viajes Operativos', pilar: 'Tecnología' },
-                { pos: 'pos_2', txt: 'Gestión de Operadores y Disponibilidad de Unidades', pilar: 'Gobernanza' }
-            ],
-            facturacion: [
-                { pos: 'pos_1', txt: 'Timbrado de Cartas Porte Automáticas', pilar: 'Tecnología' },
-                { pos: 'pos_2', txt: 'Conciliación de Evidencias de Entrega', pilar: 'Alineación' }
-            ],
-            liquidaciones: [
-                { pos: 'pos_1', txt: 'Cálculo de Comisiones y Anticipos a Operadores', pilar: 'Gobernanza' },
-                { pos: 'pos_2', txt: 'Descuentos de Combustibles y Casetas', pilar: 'Alineación' }
-            ],
-            vigilancia: [{ pos: 'pos_1', txt: 'Bitácora Digital de Accesos de Unidades', pilar: 'Cultura' }],
-            rastreo: [{ pos: 'pos_1', txt: 'Paros de Motor Automatizados ante Desvíos', pilar: 'Tecnología' }]
-        };
+        // Plantilla estática fiel para los Ejes de la Pestaña 6
+        const estructuraEjesTransversales = [
+            {
+                titulo: "📋 1. Eje: Gobernanza, Estructura y Organigrama",
+                pilar: "Gobernanza",
+                conceptos: [
+                    "Brecha de Madurez Organizacional en Descriptivos de Puesto",
+                    "Ausencia de Segregación de Funciones (SoD)",
+                    "Falta de Comité de Cambios (CAB) para Configuraciones Críticas",
+                    "Falta de un Líder de Proyecto / Key User interno por área",
+                    "Inexistencia de Auditoría de Cuentas de Usuario Inactivas",
+                    "Ausencia de un Repositorio Único de Datos Históricos"
+                ]
+            },
+            {
+                titulo: "🔄 2. Eje: Alineación de Procesos (Flujo vs Software)",
+                pilar: "Alineación",
+                conceptos: [
+                    "Asincronía en el Ciclo Documental (Desfase Operativo-Contable)",
+                    "Duplicidad de Captura de Información en Hojas de Cálculo Alternas",
+                    "Falta de Estandarización de Códigos de Falla y Paros",
+                    "Desconexión entre Presupuestos y Órdenes de Compra Reales"
+                ]
+            }
+        ];
 
         let baseDatosLocal = [];
         let bloqueActivo = 'nucleares';
@@ -339,6 +397,7 @@
             renderEditorModulo();
             actualizarDashboardGlobal();
             calcularMatrizTransversal();
+            renderFrameworkTransversal();
         }
 
         function renderMatrizVisual() {
@@ -374,16 +433,61 @@
                 }
             });
 
-            // Renderizar tanto en el Home (espejo) como en la Pestaña 6 dedicada
-            const htmlGobernanza = `<td class="col-fixed-left">Gobernanza</td><td class="data-cell">${ejes.Gobernanza.ny}</td><td class="data-cell">${ejes.Gobernanza.pi}</td><td class="data-cell">${ejes.Gobernanza.li}</td>`;
-            const htmlAlineacion = `<td class="col-fixed-left">Alineación</td><td class="data-cell">${ejes.Alineación.ny}</td><td class="data-cell">${ejes.Alineación.pi}</td><td class="data-cell">${ejes.Alineación.li}</td>`;
-            const htmlCultura = `<td class="col-fixed-left">Cultura</td><td class="data-cell">${ejes.Cultura.ny}</td><td class="data-cell">${ejes.Cultura.pi}</td><td class="data-cell">${ejes.Cultura.li}</td>`;
-            const htmlTecnologia = `<td class="col-fixed-left">Tecnología</td><td class="data-cell">${ejes.Tecnología.ny}</td><td class="data-cell">${ejes.Tecnología.pi}</td><td class="data-cell">${ejes.Tecnología.li}</td>`;
+            const codigos = { Gobernanza: 'gob', Alineación: 'ali', Cultura: 'cul', Tecnología: 'tec' };
+            for(let ej in ejes) {
+                let c = codigos[ej];
+                document.getElementById(`t-${c}-ny`).innerText = ejes[ej].ny;
+                document.getElementById(`t-${c}-pi`).innerText = ejes[ej].pi;
+                document.getElementById(`t-${c}-li`).innerText = ejes[ej].li;
+            }
+        }
 
-            const filasUnificadas = `<tr>${htmlGobernanza}</tr><tr>${htmlAlineacion}</tr><tr>${htmlCultura}</tr><tr>${htmlTecnologia}</tr>`;
-            
-            document.getElementById('transversal-body-home').innerHTML = filasUnificadas;
-            document.getElementById('transversal-body-main').innerHTML = filasUnificadas;
+        // RENDERIZAR LA PESTAÑA 6 FIEL A LA CAPTURA CON CONTENEDORES E INPUTS INDEPENDIENTES
+        function renderFrameworkTransversal() {
+            const container = document.getElementById('framework-ejes-container');
+            container.innerHTML = "";
+
+            estructuraEjesTransversales.forEach((eje, ejeIndex) => {
+                const box = document.createElement('div');
+                box.className = "matrix-box";
+                
+                let tableRowsHtml = "";
+                eje.conceptos.forEach((concepto, conceptoIndex) => {
+                    // Simulación o mapeo dinámico local para mantener los estados editables por cliente
+                    tableRowsHtml += `
+                        <tr>
+                            <td style="width: 25%; font-weight: bold; color:#1e293b;">${concepto}</td>
+                            <td style="width: 15%;">
+                                <select class="select-impact-critico" onchange="this.className = this.value === 'CRÍTICO' ? 'select-impact-critico' : (this.value === 'ALTO' ? 'select-impact-alto' : 'select-impact-medio')">
+                                    <option value="CRÍTICO" ${conceptoIndex % 3 === 1 ? 'selected':''}>⚠️ CRÍTICO</option>
+                                    <option value="ALTO" ${conceptoIndex % 3 === 0 ? 'selected':''}>🔸 ALTO</option>
+                                    <option value="MEDIO" ${conceptoIndex % 3 === 2 ? 'selected':''}>🔹 MEDIO</option>
+                                </select>
+                            </td>
+                            <td style="width: 30%;"><textarea placeholder="Describa la inconsistencia detectada en la auditoría corporativa..."></textarea></td>
+                            <td style="width: 30%;"><textarea placeholder="Propuesta de acción de mitigación inmediata..."></textarea></td>
+                        </tr>
+                    `;
+                });
+
+                box.innerHTML = `
+                    <div class="matrix-title">${eje.titulo}</div>
+                    <table class="transversal-editor-table">
+                        <thead>
+                            <tr>
+                                <th>CONCEPTO</th>
+                                <th>IMPACTO</th>
+                                <th>INCONSISTENCIA DETECTADA</th>
+                                <th>ACCIÓN DE MITIGACIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRowsHtml}
+                        </tbody>
+                    </table>
+                `;
+                container.appendChild(box);
+            });
         }
 
         function actualizarDashboardGlobal() {
@@ -403,18 +507,10 @@
             }
         }
 
-        async function cargarPlantillaBaseActual() {
-            const plantilla = plantillasBase[moduloActivo];
-            if(!plantilla) { alert("Este módulo no posee una plantilla base registrada."); return; }
-            for(let item of plantilla) {
-                await _supabase.from('conceptos_padre').insert([{ modulo_key: moduloActivo, cliente_id: getClienteId(), texto: item.txt, posicion_fila: item.pos, pilar_transversal: item.pilar, eval_manual: 'NR' }]);
-            }
-            loadAllData();
-        }
-
         function renderEditorModulo() {
             const container = document.getElementById('module-editor-container');
             const modInfo = listadoModulos.find(m => m.key === moduloActivo);
+            if(!modInfo) return;
             const filtrados = baseDatosLocal.filter(p => p.modulo_key === moduloActivo);
 
             container.innerHTML = `
@@ -438,7 +534,7 @@
 
             const tbody = document.getElementById('tbody-editor');
             if(filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="padding:20px; color:var(--secondary)">Módulo vacío. Usa "Forzar Semilla Base" o añade uno manual.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="padding:20px; color:var(--secondary)">Módulo vacío. Añade uno manual.</td></tr>`;
                 return;
             }
 
