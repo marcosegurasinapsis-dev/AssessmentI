@@ -85,7 +85,7 @@
         .tab-content { display: none; } 
         .tab-content.active { display: block; }
         
-        /* DISTRIBUCIÓN LADO A LADO RECONSTRUIDA */
+        /* DISTRIBUCIÓN LADO A LADO */
         .matrices-layout {
             display: grid;
             grid-template-columns: 3fr 1fr;
@@ -115,7 +115,7 @@
             font-weight: bold;
             background-color: #fff1f2;
             color: #991b1b;
-            border: 2px solid #ef4444 !important; /* Bordes rojos idénticos a la captura */
+            border: 2px solid #ef4444 !important;
         }
         .transversal-table th.header-critico { color: #dc2626 !important; font-weight: 900; }
         .transversal-table th.header-alto { color: #f97316 !important; font-weight: 900; }
@@ -129,7 +129,7 @@
         .badge-NY { background-color: #fef2f2 !important; color: var(--ny-color) !important; }
         .badge-NR { background-color: #e2e8f0 !important; color: #475569 !important; }
 
-        /* ESTILOS ESPECÍFICOS PARA LA PANTALLA DE DIAGNÓSTICO TRANSVERSAL (PESTALA 6) */
+        /* ESTILOS DE LA PESTAÑA 6 DIAGNÓSTICO TRANSVERSAL */
         .framework-header {
             background-color: white;
             border: 1px solid var(--border-color);
@@ -142,15 +142,6 @@
             align-items: center;
             gap: 10px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .eje-section-title {
-            font-size: 12px;
-            font-weight: bold;
-            color: var(--primary);
-            margin: 20px 0 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
         .transversal-editor-table th {
             font-size: 10px;
@@ -286,7 +277,7 @@
 
         <div id="tab-transversal" class="tab-content">
             <div class="framework-header">
-                📊 Framework de Diagnóstico Transversal e Inconsistencias Mapeadas
+                🚀 Framework de Diagnóstico Transversal e Inconsistencias Mapeadas
             </div>
             
             <div id="framework-ejes-container">
@@ -323,7 +314,7 @@
             { key: 'edi', name: 'EDI', block: 'prosuite' }
         ];
 
-        // Plantilla estática fiel para los Ejes de la Pestaña 6
+        // RECONSTRUCCIÓN COMPLETA DE LOS 4 EJES CORPORATIVOS ORIGINALES CON SUS CONCEPTOS BASE
         const estructuraEjesTransversales = [
             {
                 titulo: "📋 1. Eje: Gobernanza, Estructura y Organigrama",
@@ -345,6 +336,24 @@
                     "Duplicidad de Captura de Información en Hojas de Cálculo Alternas",
                     "Falta de Estandarización de Códigos de Falla y Paros",
                     "Desconexión entre Presupuestos y Órdenes de Compra Reales"
+                ]
+            },
+            {
+                titulo: "👥 3. Eje: Cultura Organizacional y Gestión del Cambio",
+                pilar: "Cultura",
+                conceptos: [
+                    "Resistencia al Cambio Operativo por Fricción Tecnológica",
+                    "Brecha de Capacitación Continua en Nuevas Versiones",
+                    "Falta de Incentivos Asociados a la Disciplina de Captura de Datos"
+                ]
+            },
+            {
+                titulo: "💻 4. Eje: Arquitectura Tecnológica e Infraestructura Cloud",
+                pilar: "Tecnología",
+                conceptos: [
+                    "Intermitencia en APIs de Conexión de Terceros / Proveedores",
+                    "Incompatibilidad de Protocolos Legados con la Suite Realtime",
+                    "Ausencia de Políticas Robustas de Respaldos Cruzados Automáticos"
                 ]
             }
         ];
@@ -412,7 +421,7 @@
                 let htmlCells = `<td class="col-fixed-left">Pos ${i}</td>`;
                 listadoModulos.forEach(mod => {
                     const padre = baseDatosLocal.find(p => p.modulo_key === mod.key && p.posicion_fila === posKey);
-                    const status = padre ? getMaturity(padre) : "NR";
+                    const status = padre ? getMaturity(parent) : "NR";
                     htmlCells += `<td><span class="cell-badge badge-${status}">${status}</span></td>`;
                 });
                 tr.innerHTML = htmlCells;
@@ -436,13 +445,15 @@
             const codigos = { Gobernanza: 'gob', Alineación: 'ali', Cultura: 'cul', Tecnología: 'tec' };
             for(let ej in ejes) {
                 let c = codigos[ej];
-                document.getElementById(`t-${c}-ny`).innerText = ejes[ej].ny;
-                document.getElementById(`t-${c}-pi`).innerText = ejes[ej].pi;
-                document.getElementById(`t-${c}-li`).innerText = ejes[ej].li;
+                if(document.getElementById(`t-${c}-ny`)) {
+                    document.getElementById(`t-${c}-ny`).innerText = ejes[ej].ny;
+                    document.getElementById(`t-${c}-pi`).innerText = ejes[ej].pi;
+                    document.getElementById(`t-${c}-li`).innerText = ejes[ej].li;
+                }
             }
         }
 
-        // RENDERIZAR LA PESTAÑA 6 FIEL A LA CAPTURA CON CONTENEDORES E INPUTS INDEPENDIENTES
+        // GENERACIÓN COMPLETA Y DINÁMICA DE LA TABLA DE DIAGNÓSTICO TRANSVERSAL (CON LOS 4 EJES)
         function renderFrameworkTransversal() {
             const container = document.getElementById('framework-ejes-container');
             container.innerHTML = "";
@@ -453,15 +464,20 @@
                 
                 let tableRowsHtml = "";
                 eje.conceptos.forEach((concepto, conceptoIndex) => {
-                    // Simulación o mapeo dinámico local para mantener los estados editables por cliente
+                    // Distribución de impactos simulada fiel a la captura original (Crítico, Alto, Medio)
+                    let classInit = "select-impact-critico";
+                    let valInit = "CRÍTICO";
+                    if ((conceptoIndex + ejeIndex) % 3 === 1) { classInit = "select-impact-alto"; valInit = "ALTO"; }
+                    if ((conceptoIndex + ejeIndex) % 3 === 2) { classInit = "select-impact-medio"; valInit = "MEDIO"; }
+
                     tableRowsHtml += `
                         <tr>
                             <td style="width: 25%; font-weight: bold; color:#1e293b;">${concepto}</td>
                             <td style="width: 15%;">
-                                <select class="select-impact-critico" onchange="this.className = this.value === 'CRÍTICO' ? 'select-impact-critico' : (this.value === 'ALTO' ? 'select-impact-alto' : 'select-impact-medio')">
-                                    <option value="CRÍTICO" ${conceptoIndex % 3 === 1 ? 'selected':''}>⚠️ CRÍTICO</option>
-                                    <option value="ALTO" ${conceptoIndex % 3 === 0 ? 'selected':''}>🔸 ALTO</option>
-                                    <option value="MEDIO" ${conceptoIndex % 3 === 2 ? 'selected':''}>🔹 MEDIO</option>
+                                <select class="${classInit}" onchange="this.className = this.value === 'CRÍTICO' ? 'select-impact-critico' : (this.value === 'ALTO' ? 'select-impact-alto' : 'select-impact-medio')">
+                                    <option value="CRÍTICO" ${valInit==='CRÍTICO'?'selected':''}>⚠️ CRÍTICO</option>
+                                    <option value="ALTO" ${valInit==='ALTO'?'selected':''}>🔸 ALTO</option>
+                                    <option value="MEDIO" ${valInit==='MEDIO'?'selected':''}>🔹 MEDIO</option>
                                 </select>
                             </td>
                             <td style="width: 30%;"><textarea placeholder="Describa la inconsistencia detectada en la auditoría corporativa..."></textarea></td>
