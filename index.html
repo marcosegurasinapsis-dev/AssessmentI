@@ -60,23 +60,49 @@
         .client-bar input { width: 150px; background: #0f172a; color: white; border: 1px solid #475569; padding: 5px 10px; border-radius: var(--radius-md); font-weight: bold; }
         .status-indicator { margin-left: auto; font-weight: bold; color: #38bdf8; display: flex; align-items: center; gap: 6px; }
 
+        /* BLOQUES DE PROGRESO */
         .top-dashboard-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 15px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         .dash-card {
             background: #f8fafc;
             border: 1px solid var(--border-color);
-            padding: 15px;
+            padding: 12px;
             border-radius: var(--radius-lg);
         }
-        .dash-card h3 { margin: 0 0 8px 0; color: var(--primary); font-size: 12px; font-weight: 700; }
-        .dash-meta { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; }
-        .progress-bar-bg { background: #e2e8f0; height: 6px; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+        .dash-card h3 { margin: 0 0 6px 0; color: var(--primary); font-size: 11px; font-weight: 700; }
+        .dash-meta { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 12px; }
+        .progress-bar-bg { background: #e2e8f0; height: 6px; border-radius: 3px; margin-top: 6px; overflow: hidden; }
         .progress-bar-fill { height: 100%; background: var(--fi-color); width: 0%; transition: width 0.4s ease; }
 
+        /* NUEVA/RESTAURADA GRÁFICA PRINCIPAL HORIZONTAL DE ESLABONES CRÍTICOS */
+        .critic-chart-container {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 25px;
+        }
+        .critic-chart-title { font-weight: bold; font-size: 12px; margin-bottom: 10px; color: var(--primary); display: flex; justify-content: space-between; }
+        .critic-grid {
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            gap: 4px;
+        }
+        .critic-box-cell {
+            text-align: center;
+            border-radius: 4px;
+            padding: 8px 2px;
+            font-weight: 800;
+            font-size: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .critic-box-label { font-size: 8px; font-weight: 600; color: #64748b; margin-top: 4px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* TABS */
         .tabs-container { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; }
         .tab-btn { background: #f8fafc; border: 1px solid var(--border-color); padding: 10px 14px; font-weight: 600; color: var(--secondary); cursor: pointer; border-radius: 6px 6px 0 0; }
         .tab-btn.active { color: white; background: var(--primary); border-color: var(--primary); }
@@ -104,12 +130,13 @@
         
         .col-fixed-left { text-align: left; font-weight: bold; background: #f8fafc; width: 80px; }
         
+        /* BADGES */
         .cell-badge { display: block; padding: 4px; font-weight: bold; border-radius: 4px; text-align: center; text-transform: uppercase; font-size: 10px; }
-        .badge-FI { background-color: #f0fdf4 !important; color: var(--fi-color) !important; }
-        .badge-LI { background-color: #fef9c3 !important; color: #a16207 !important; }
-        .badge-PI { background-color: #fff7ed !important; color: var(--pi-color) !important; }
-        .badge-NY { background-color: #fef2f2 !important; color: var(--ny-color) !important; }
-        .badge-NR { background-color: #e2e8f0 !important; color: #475569 !important; }
+        .badge-FI { background-color: #f0fdf4 !important; color: var(--fi-color) !important; border: 1px solid #bbf7d0; }
+        .badge-LI { background-color: #fef9c3 !important; color: #a16207 !important; border: 1px solid #fef08a; }
+        .badge-PI { background-color: #fff7ed !important; color: var(--pi-color) !important; border: 1px solid #ffedd5; }
+        .badge-NY { background-color: #fef2f2 !important; color: var(--ny-color) !important; border: 1px solid #fecaca; }
+        .badge-NR { background-color: #e2e8f0 !important; color: #475569 !important; border: 1px solid #cbd5e1; }
 
         .row-parent { background-color: #f1f5f9; font-weight: bold; border-left: 4px solid #3b71ca; }
         .row-child td:first-child { padding-left: 20px; text-align: left; }
@@ -155,6 +182,15 @@
                 <div class="dash-meta"><span id="lbl-pct-prosuite">0%</span> <span>Adopción</span></div>
                 <div class="progress-bar-bg"><div id="bar-prosuite" class="progress-bar-fill"></div></div>
             </div>
+        </div>
+
+        <div class="critic-chart-container">
+            <div class="critic-chart-title">
+                <span>Eslabón Crítico de Madurez Actual por Módulo</span>
+                <span style="font-size:10px; color:var(--secondary)">Calculado en tiempo real desde Supabase</span>
+            </div>
+            <div class="critic-grid" id="critic-dashboard-row">
+                </div>
         </div>
 
         <div class="tabs-container">
@@ -240,7 +276,6 @@
             { key: 'edi', name: 'EDI', block: 'prosuite' }
         ];
 
-        // === PLANTILLA CONCEPTOS BASE MAESTRA ===
         const plantillasBase = {
             trafico: [
                 { pos: 'pos_1', txt: 'Control y Monitoreo de Viajes Operativos', pilar: 'Tecnología' },
@@ -254,12 +289,11 @@
                 { pos: 'pos_1', txt: 'Cálculo de Comisiones y Anticipos a Operadores', pilar: 'Gobernanza' },
                 { pos: 'pos_2', txt: 'Descuentos de Combustibles y Casetas', pilar: 'Alineación' }
             ],
-            vigilancia: [
-                { pos: 'pos_1', txt: 'Bitácora Digital de Accesos de Unidades', pilar: 'Cultura' }
-            ],
-            rastreo: [
-                { pos: 'pos_1', txt: 'Paros de Motor Automatizados ante Desvíos', pilar: 'Tecnología' }
-            ]
+            vigilancia: [{ pos: 'pos_1', txt: 'Bitácora Digital de Accesos de Unidades', pilar: 'Cultura' }],
+            rastreo: [{ pos: 'pos_1', txt: 'Paros de Motor Automatizados ante Desvíos', pilar: 'Tecnología' }],
+            admin: [{ pos: 'pos_1', txt: 'Captura unificada de solicitudes de clientes', pilar: 'Gobernanza' }],
+            compras: [{ pos: 'pos_1', txt: 'Órdenes de compra validadas contra almacén', pilar: 'Alineación' }],
+            almacen: [{ pos: 'pos_1', txt: 'Conteos cíclicos con terminales digitales', pilar: 'Tecnología' }]
         };
 
         let baseDatosLocal = [];
@@ -307,11 +341,49 @@
             return "NR";
         }
 
+        // NUEVO: DETERMINA EL PEOR ESTATUS GENERAL DE TODO UN MÓDULO (REGLA DEL ESLABÓN)
+        function getModuloMaturityStatus(modKey) {
+            const padres = baseDatosLocal.filter(p => p.modulo_key === modKey);
+            if (padres.length === 0) return "NR";
+            
+            let hasNY = false, hasPI = false, hasLI = false, hasFI = false;
+            padres.forEach(p => {
+                const mat = getMaturity(p);
+                if (mat === "NY") hasNY = true;
+                if (mat === "PI") hasPI = true;
+                if (mat === "LI") hasLI = true;
+                if (mat === "FI") hasFI = true;
+            });
+            
+            if (hasNY) return "NY";
+            if (hasPI) return "PI";
+            if (hasLI) return "LI";
+            if (hasFI) return "FI";
+            return "NR";
+        }
+
         function calcularYRenderizarTodo() {
+            renderEslabonesHorizontales();
             renderMatrizVisual();
             renderEditorModulo();
             actualizarDashboardGlobal();
             calcularMatrizTransversal();
+        }
+
+        // 📊 REDIBUJAR LA FILA CON LOS 20 BLOQUES HORIZONTALES ORIGINALES DE LA CABECERA
+        function renderEslabonesHorizontales() {
+            const container = document.getElementById('critic-dashboard-row');
+            container.innerHTML = '';
+            
+            listadoModulos.forEach(mod => {
+                const status = getModuloMaturityStatus(mod.key);
+                const cell = document.createElement('div');
+                cell.innerHTML = `
+                    <div class="critic-box-cell badge-${status}">${status}</div>
+                    <span class="critic-box-label" title="${mod.name}">${mod.name}</span>
+                `;
+                container.appendChild(cell);
+            });
         }
 
         function renderMatrizVisual() {
@@ -326,7 +398,7 @@
                 let htmlCells = `<td class="col-fixed-left">Pos ${i}</td>`;
                 listadoModulos.forEach(mod => {
                     const padre = baseDatosLocal.find(p => p.modulo_key === mod.key && p.posicion_fila === posKey);
-                    const status = padre ? getMaturity(parent = padre) : "NR";
+                    const status = padre ? getMaturity(padre) : "NR";
                     htmlCells += `<td><span class="cell-badge badge-${status}">${status}</span></td>`;
                 });
                 tr.innerHTML = htmlCells;
@@ -334,10 +406,8 @@
             }
         }
 
-        // 🎯 CÁLCULO DE PESTAÑA TRANSVERSAL REACTIVA
         function calcularMatrizTransversal() {
             const ejes = { Gobernanza: { ny:0, pi:0, li:0, fi:0 }, Alineación: { ny:0, pi:0, li:0, fi:0 }, Cultura: { ny:0, pi:0, li:0, fi:0 }, Tecnología: { ny:0, pi:0, li:0, fi:0 } };
-            
             baseDatosLocal.forEach(p => {
                 const pilar = p.pilar_transversal || 'Gobernanza';
                 const status = getMaturity(p);
@@ -348,7 +418,6 @@
                     if(status === 'FI') ejes[pilar].fi++;
                 }
             });
-
             const codigos = { Gobernanza: 'gob', Alineación: 'ali', Cultura: 'cul', Tecnología: 'tec' };
             for(let ej in ejes) {
                 let c = codigos[ej];
@@ -376,20 +445,11 @@
             }
         }
 
-        // SEMBRAR AUTOMÁTICAMENTE CONCEPTOS SI LA SOLICITUD ESTÁ VACÍA
         async function cargarPlantillaBaseActual() {
             const plantilla = plantillasBase[moduloActivo];
             if(!plantilla) { alert("Este módulo no posee una plantilla base registrada; añade conceptos libres."); return; }
-            
             for(let item of plantilla) {
-                await _supabase.from('conceptos_padre').insert([{ 
-                    modulo_key: moduloActivo, 
-                    cliente_id: getClienteId(), 
-                    texto: item.txt, 
-                    posicion_fila: item.pos, 
-                    pilar_transversal: item.pilar,
-                    eval_manual: 'NR' 
-                }]);
+                await _supabase.from('conceptos_padre').insert([{ modulo_key: moduloActivo, cliente_id: getClienteId(), texto: item.txt, posicion_fila: item.pos, pilar_transversal: item.pilar, eval_manual: 'NR' }]);
             }
             loadAllData();
         }
@@ -501,7 +561,6 @@
             renderEditorModulo();
         }
 
-        // ACCIONES CLOUD
         async function addParentCloud() {
             await _supabase.from('conceptos_padre').insert([{ modulo_key: moduloActivo, cliente_id: getClienteId(), texto: 'Concepto Personalizado Libre', posicion_fila: 'pos_1', pilar_transversal: 'Gobernanza', eval_manual: 'NR' }]);
             loadAllData();
