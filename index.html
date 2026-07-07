@@ -2,600 +2,672 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Appraisal ERP - Cloud Master Edition</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Dashboard de Adopción - Appraisal ERP (Lógica de Madurez Acumulativa)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <style>
-        :root { 
+        :root {
             --fi-color: #16a34a; 
             --li-color: #eab308; 
             --pi-color: #f97316; 
             --ny-color: #dc2626; 
             --nr-color: #cbd5e1; 
-            --primary: #0f172a; 
-            --secondary: #64748b; 
-            --border-color: #e2e8f0; 
-            --radius-md: 6px; 
-            --radius-lg: 12px; 
+            --primary: #0f172a;
+            --secondary: #64748b;
+            --bg-light: #f8fafc;
+            --border-color: #e2e8f0;
+            --radius-md: 6px;
+            --radius-lg: 12px;
         }
-        
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            color: #1e293b; 
-            margin: 0; 
-            padding: 20px; 
-            font-size: 11px; 
-            background-color: #f1f5f9; 
-        }
-        
-        .dashboard-container { 
-            max-width: 1750px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 25px; 
-            border-radius: var(--radius-lg); 
-            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.05); 
-        }
-        
-        .header-grid { 
-            background-color: #0f172a; 
-            padding: 20px; 
-            border-radius: var(--radius-lg); 
-            text-align: center; 
-            margin-bottom: 20px; 
-            color: white;
-        }
-        .header-grid h1 { font-size: 22px; margin: 0; font-weight: 800; letter-spacing: -0.5px; }
-        .header-grid p { color: #94a3b8; margin: 5px 0 0 0; font-size: 12px; }
-        
-        .client-bar {
-            background: #1e293b;
-            padding: 10px 20px;
-            border-radius: var(--radius-md);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: white;
-        }
-        .client-bar input { width: 150px; background: #0f172a; color: white; border: 1px solid #475569; padding: 5px 10px; border-radius: var(--radius-md); font-weight: bold; }
-        .status-indicator { margin-left: auto; font-weight: bold; color: #38bdf8; display: flex; align-items: center; gap: 6px; }
 
-        /* BLOQUES DE PROGRESO */
-        .top-dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 30px;
+            font-size: 12px;
+            background-color: #f1f5f9;
         }
-        .dash-card {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            border-radius: var(--radius-lg);
-        }
-        .dash-card h3 { margin: 0 0 6px 0; color: var(--primary); font-size: 11px; font-weight: 700; }
-        .dash-meta { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 12px; }
-        .progress-bar-bg { background: #e2e8f0; height: 6px; border-radius: 3px; margin-top: 6px; overflow: hidden; }
-        .progress-bar-fill { height: 100%; background: var(--fi-color); width: 0%; transition: width 0.4s ease; }
 
-        /* TABS */
-        .tabs-container { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; }
-        .tab-btn { background: #f8fafc; border: 1px solid var(--border-color); padding: 10px 14px; font-weight: 600; color: var(--secondary); cursor: pointer; border-radius: 6px 6px 0 0; }
-        .tab-btn.active { color: white; background: var(--primary); border-color: var(--primary); }
-        .tab-content { display: none; } 
-        .tab-content.active { display: block; }
-        
-        /* LAYOUT LADO A LADO */
-        .matrices-layout {
-            display: grid;
-            grid-template-columns: 3fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
-            align-items: start;
-        }
-        .matrix-box {
+        .dashboard-container {
+            max-width: 1750px;
+            margin: 0 auto;
             background: white;
-            border: 1px solid var(--border-color);
+            padding: 35px;
             border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.02);
-            margin-bottom: 20px;
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.05);
         }
-        .matrix-title { background: #0f172a; color: white; padding: 10px 15px; font-weight: bold; font-size: 12px; }
-        
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; border: 1px solid var(--border-color); text-align: center; }
-        th { background: #f8fafc; color: #475569; font-size: 9px; text-transform: uppercase; font-weight: 700; }
-        
-        .col-fixed-left { text-align: left; font-weight: bold; background: #f8fafc; color: #1e293b; }
-        
-        /* BADGES */
-        .cell-badge { display: block; padding: 4px; font-weight: bold; border-radius: 4px; text-align: center; text-transform: uppercase; font-size: 10px; }
-        .badge-FI { background-color: #f0fdf4 !important; color: var(--fi-color) !important; }
-        .badge-LI { background-color: #fef9c3 !important; color: #a16207 !important; }
-        .badge-PI { background-color: #fff7ed !important; color: var(--pi-color) !important; }
-        .badge-NY { background-color: #fef2f2 !important; color: var(--ny-color) !important; }
-        .badge-NR { background-color: #e2e8f0 !important; color: #475569 !important; }
 
-        /* PESTAÑA TRANSVERSAL */
-        .framework-header {
-            background-color: white;
-            border: 1px solid var(--border-color);
+        /* --- ENCABEZADO --- */
+        .header-grid {
+            display: grid;
+            grid-template-columns: 240px 1fr 240px;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 25px;
+            margin-bottom: 25px;
+            gap: 25px;
+            background-color: #0f172a; 
+            padding: 20px;
+            border-radius: var(--radius-lg);
+        }
+
+        .logo-uploader {
+            border: 2px dashed #475569;
             padding: 15px;
             border-radius: var(--radius-md);
-            font-weight: bold;
-            font-size: 13px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            text-align: center;
+            background: #1e293b; 
+            cursor: pointer;
+            width: 100%;
+            max-width: 240px;
+            box-sizing: border-box;
+            position: relative;
+            min-height: 95px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
-        .transversal-editor-table th { font-size: 10px; text-align: left; padding: 10px; }
-        .transversal-editor-table td { text-align: left; padding: 10px; background: #ffffff; }
-        .transversal-editor-table textarea { width: 100%; height: 45px; border: 1px solid var(--border-color); border-radius: 4px; padding: 6px; font-family: inherit; font-size: 11px; resize: vertical; box-sizing: border-box; }
-        .transversal-editor-table select { padding: 6px; font-weight: bold; border-radius: 4px; border: 1px solid var(--border-color); width: 100%; }
-        
-        .select-impact-critico { background-color: #fef2f2; color: #dc2626; border-color: #fca5a5; }
-        .select-impact-alto { background-color: #fff7ed; color: #f97316; border-color: #fdba74; }
-        .select-impact-medio { background-color: #fef9c3; color: #b45309; border-color: #fde047; }
+        .logo-uploader:hover { border-color: #38bdf8; background: #0f172a; }
+        .logo-uploader input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5; }
+        .logo-uploader img { max-height: 75px; max-width: 100%; display: none; object-fit: contain; padding: 4px; }
+        .logo-uploader p { margin: 0; font-size: 11px; color: #94a3b8; font-weight: 500; }
 
-        .row-parent { background-color: #f1f5f9; font-weight: bold; border-left: 4px solid #3b71ca; }
-        .row-child td:first-child { padding-left: 20px; text-align: left; }
-        .module-editor-header { background-color: #0f172a; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-radius: 6px 6px 0 0; margin-top: 15px; }
-        .btn-action { padding: 5px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; color: white; background: #3b71ca; }
-        .btn-delete { background-color: #dc2626 !important; padding: 3px 6px; font-size: 10px; }
+        .header-titles { text-align: center; }
+        .header-titles h1 { font-size: 24px; color: #ffffff; margin: 0 0 6px 0; font-weight: 800; }
+        .header-titles p { margin: 0; color: #94a3b8; font-size: 13px; font-weight: 500; }
+
+        /* --- RECUADROS TOP --- */
+        .blocks-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 15px; margin-bottom: 25px; }
+        .summary-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; }
+        .summary-card h3 { margin: 0 0 15px 0; color: var(--primary); font-size: 14px; border-bottom: 2px solid #cbd5e1; padding-bottom: 6px; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 600; }
         
-        .selector-modulo-inline { background: #1e293b; color: white; border: 1px solid #475569; padding: 4px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .progress-bar-bg { background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 4px; margin-bottom: 12px; }
+        .progress-bar-fill { height: 100%; width: 0%; background: var(--fi-color); transition: width 0.3s ease; }
+
+        /* --- MATRICES GRÁFICAS --- */
+        .graphics-layout-grid { display: grid; grid-template-columns: 1fr 450px; gap: 20px; margin-bottom: 25px; }
+        .matrix-section { background: #ffffff; border: 1px solid #94a3b8; border-radius: var(--radius-md); overflow: hidden; height: 100%; }
+        .matrix-header-bar { background: #3b71ca; color: white; padding: 10px 16px; font-weight: 700; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+        .matrix-body-layout { padding: 20px; display: grid; grid-template-columns: 1fr 220px; gap: 20px; align-items: start; }
+        .grid-table-wrapper { width: 100%; overflow-x: auto; }
         
-        /* ESTILO SECCIÓN OBSERVACIONES / EVIDENCIAS */
-        .evidence-box { width: 100%; height: 35px; border: 1px solid var(--border-color); border-radius: 4px; padding: 6px; font-size: 11px; box-sizing: border-box; font-family: inherit; }
-        .metric-check-input { width: 100%; border: 1px solid var(--border-color); border-radius: 4px; padding: 6px; font-size: 11px; box-sizing: border-box; font-family: inherit; }
+        .cmmi-grid-table { display: grid; border-left: 1px solid #cbd5e1; border-top: 1px solid #cbd5e1; min-width: 800px; }
+        .grid-row { display: grid; grid-template-columns: 60px repeat(20, 1fr); }
+        .grid-cell { border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 8px 2px; text-align: center; font-weight: 700; font-size: 9px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 22px; }
+        .grid-cell.label-side { background: #f1f5f9; color: #334155; font-size: 11px; }
+        .grid-cell.label-top { background: #f8fafc; color: #475569; font-weight: 800; font-size: 9px; word-break: break-all; line-height: 1.1; padding: 4px 1px; }
+        .grid-cell.prosuite-col { background: #eff6ff; color: #1e40af; border-right-color: #bfdbfe; }
+
+        /* Matriz Transversal */
+        .transversal-grid-table { display: grid; border-left: 1px solid #cbd5e1; border-top: 1px solid #cbd5e1; }
+        .trans-row { display: grid; grid-template-columns: 100px repeat(3, 1fr); }
+        .trans-cell { border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 15px 5px; text-align: center; font-weight: bold; font-size: 11px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+        .trans-cell.header-cell { background: #f8fafc; font-weight: 800; color: #475569; }
+        .trans-cell.side-cell { background: #f1f5f9; font-weight: 800; color: #334155; text-align: left; padding-left: 8px; justify-content: flex-start; }
+        .has-finding { background-color: #fee2e2; color: #991b1b; border: 2px solid #ef4444; }
+        .no-finding { background-color: #f0fdf4; color: #166534; }
+
+        .c-NR { background-color: var(--nr-color) !important; color: #475569; }
+        .c-NY { background-color: var(--ny-color) !important; color: white; }
+        .c-PI { background-color: var(--pi-color) !important; color: white; }
+        .c-LI { background-color: var(--li-color) !important; color: #000; }
+        .c-FI { background-color: var(--fi-color) !important; color: white; }
+
+        .matrix-legend-card { border: 1px solid #cbd5e1; padding: 15px; background: #f8fafc; border-radius: var(--radius-md); }
+        .legend-title { font-weight: 700; margin-bottom: 10px; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; color: var(--primary); }
+        .legend-flex-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 11px; font-weight: 500; color: #334155; }
+        .legend-color-box { width: 16px; height: 16px; border: 1px solid #94a3b8; border-radius: 3px; flex-shrink: 0; }
+
+        /* --- SISTEMA DE PESTAÑAS --- */
+        .tabs-container { display: flex; gap: 4px; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); overflow-x: auto; }
+        .tab-btn { background: #f8fafc; border: 1px solid var(--border-color); border-bottom: none; padding: 12px 18px; font-size: 11px; font-weight: 600; color: var(--secondary); border-radius: var(--radius-md) var(--radius-md) 0 0; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; position: relative; bottom: -2px; }
+        .tab-btn:hover { color: var(--primary); background: #f1f5f9; }
+        .tab-btn.active { color: white; background: var(--primary); border-color: var(--primary); font-weight: 700; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.25s ease; }
+
+        /* --- TABLAS JERÁRQUICAS --- */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 25px; background: white; border: 1px solid var(--border-color); }
+        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        th { background: #f8fafc; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 10px; }
+        
+        .module-row-header { background-color: #3b71ca; color: white; font-weight: 700; padding: 12px 14px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; border-radius: var(--radius-md) var(--radius-md) 0 0; }
+        .prosuite-header { background-color: #2563eb !important; }
+        
+        /* Estilos Filas Padre e Hijo */
+        .row-parent { background-color: #f8fafc; font-weight: bold; border-left: 4px solid #3b71ca; }
+        .row-child { background-color: #ffffff; }
+        .row-child td:first-child { padding-left: 25px; color: var(--secondary); }
+
+        select, textarea, input[type="text"].editable-title { width: 100%; box-sizing: border-box; font-family: inherit; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; outline: none; }
+        select { font-weight: 600; cursor: pointer; background: white; }
+        textarea { resize: vertical; min-height: 40px; }
+        
+        .badge-calculated { display: inline-block; padding: 4px 8px; font-weight: bold; border-radius: 4px; text-align: center; width: 85%; border: 1px solid #475569; font-size: 11px; text-transform: uppercase; }
+
+        select.fi-s, .badge-FI { background-color: #f0fdf4 !important; color: var(--fi-color) !important; border-color: #bbf7d0 !important; }
+        select.li-s, .badge-LI { background-color: #fef9c3 !important; color: #a16207 !important; border-color: #fef08a !important; }
+        select.pi-s, .badge-PI { background-color: #fff7ed !important; color: var(--pi-color) !important; border-color: #fed7aa !important; }
+        select.ny-s, .badge-NY { background-color: #fef2f2 !important; color: var(--ny-color) !important; border-color: #fecaca !important; }
+        select.nr-s, .badge-NR { background-color: #e2e8f0 !important; color: #475569 !important; border-color: #cbd5e1 !important; }
+
+        .btn-action { padding: 4px 8px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; color: white; }
+        .btn-add-parent { background: #0f172a; }
+        .btn-add-child { background: #2563eb; }
+        .btn-add-parent:hover { background: #1e293b; }
+        .btn-add-child:hover { background: #1d4ed8; }
+
+        .audit-card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: var(--radius-lg); padding: 25px; margin-bottom: 30px; }
+        .audit-card-title { font-size: 16px; font-weight: 800; color: var(--primary); margin: 0 0 8px 0; }
+        .audit-card-desc { font-size: 12px; color: var(--secondary); margin: 0 0 20px 0; }
+        select.imp-critico { background-color: #fef2f2; color: #dc2626; border-color: #fecaca; font-weight: 700; }
+        select.imp-alto { background-color: #fff7ed; color: #ea580c; border-color: #fed7aa; font-weight: 700; }
+        select.imp-medio { background-color: #fef9c3; color: #854d0e; border-color: #fef08a; font-weight: 700; }
+
+        .export-bar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px; }
+        .btn-export-excel { background: #16a34a; color: white; border: none; padding: 8px 14px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        .btn-export-pdf { background: #0f172a; color: white; border: none; padding: 8px 14px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 11px; }
+
+        @media print {
+            body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .tabs-container, .export-bar, .btn-action { display: none !important; }
+            .tab-content { display: block !important; opacity: 1 !important; }
+            .dashboard-container { box-shadow: none; padding: 0; max-width: 100%; }
+        }
     </style>
 </head>
 <body>
 
     <div class="dashboard-container">
+        
         <div class="header-grid">
-            <h1>Appraisal de Adopción de Procesos ERP</h1>
-            <p>Modelo de Diagnóstico de Madurez con Criterio de Eslabón Crítico (No Promedios) — Cloud System</p>
+            <div class="logo-uploader">
+                <p id="advan-text">🔹 Drag & Drop Logo ADVAN ONE</p>
+                <input type="file" accept="image/*" onchange="previewLogo(this, 'advan-preview', 'advan-text')">
+                <img id="advan-preview" alt="Logo ADVAN">
+            </div>
+            <div class="header-titles">
+                <h1>Appraisal de Adopción de Procesos ERP</h1>
+                <p>Modelo de Diagnóstico de Madurez con Criterio de Eslabón Crítico (No Promedios)</p>
+            </div>
+            <div class="logo-uploader">
+                <p id="client-text">🏢 Drag & Drop Logo Cliente</p>
+                <input type="file" accept="image/*" onchange="previewLogo(this, 'client-preview', 'client-text')">
+                <img id="client-preview" alt="Logo Cliente">
+            </div>
         </div>
 
-        <div class="client-bar">
-            <label>📂 ID Único Auditoría / Cliente:</label>
-            <input type="text" id="client-id-input" value="demo" onchange="loadAllData()">
-            <button class="btn-action" style="background: #2563eb;" onclick="loadAllData()">⚡ Sincronizar Base Cloud</button>
-            <div class="status-indicator" id="cloud-status">⏳ Inicializando conexión...</div>
-        </div>
-
-        <div class="top-dashboard-grid">
-            <div class="dash-card">
-                <h3>📦 Bloque Módulos Nucleares</h3>
-                <div class="dash-meta"><span id="lbl-pct-nucleares">0%</span> <span>Adopción</span></div>
-                <div class="progress-bar-bg"><div id="bar-nucleares" class="progress-bar-fill"></div></div>
-            </div>
-            <div class="dash-card">
-                <h3>💰 Bloque Módulos Financieros</h3>
-                <div class="dash-meta"><span id="lbl-pct-financieros">0%</span> <span>Adopción</span></div>
-                <div class="progress-bar-bg"><div id="bar-financieros" class="progress-bar-fill"></div></div>
-            </div>
-            <div class="dash-card">
-                <h3>⚙️ Bloque Módulos Auxiliares</h3>
-                <div class="dash-meta"><span id="lbl-pct-auxiliares">0%</span> <span>Adopción</span></div>
-                <div class="progress-bar-bg"><div id="bar-auxiliares" class="progress-bar-fill"></div></div>
-            </div>
-            <div class="dash-card">
-                <h3>🚀 Bloque Prosuite</h3>
-                <div class="dash-meta"><span id="lbl-pct-prosuite">0%</span> <span>Adopción</span></div>
-                <div class="progress-bar-bg"><div id="bar-prosuite" class="progress-bar-fill"></div></div>
-            </div>
+        <div class="export-bar">
+            <button class="btn-export-excel" onclick="alert('Esquema guardado localmente en memoria activa de ejecución.')">🟢 Guardar Cambios Locales</button>
+            <button class="btn-export-pdf" onclick="window.print()">⚫ Guardar PDF</button>
         </div>
 
         <div class="tabs-container">
-            <button class="tab-btn active" onclick="switchTab(event, 'tab-matriz', '')">📊 1. Dashboard Principal</button>
-            <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'nucleares')">📦 2. Módulos Nucleares</button>
-            <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'financieros')">💰 3. Módulos Financieros</button>
-            <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'auxiliares')">⚙️ 4. Módulos Auxiliares</button>
-            <button class="tab-btn" onclick="switchTab(event, 'tab-bloques', 'prosuite')">🚀 5. Prosuite</button>
-            <button class="tab-btn" onclick="switchTab(event, 'tab-transversal', '')">📋 6. Diagnóstico Transversal</button>
+            <button class="tab-btn active" onclick="switchTab(event, 'pestana1')">📊 1. Dashboard Principal</button>
+            <button class="tab-btn" onclick="switchTab(event, 'pestana3')">📦 2. Módulos Nucleares</button>
+            <button class="tab-btn" onclick="switchTab(event, 'pestana4')">💰 3. Módulos Financieros</button>
+            <button class="tab-btn" onclick="switchTab(event, 'pestana5')">⚙️ 4. Módulos Auxiliares</button>
+            <button class="tab-btn" onclick="switchTab(event, 'pestana6')">🚀 5. Prosuite</button>
+            <button class="tab-btn" onclick="switchTab(event, 'pestana7')">📋 6. Diagnóstico Transversal</button>
         </div>
 
-        <div id="tab-matriz" class="tab-content active">
-            <div class="matrices-layout">
-                <div class="matrix-box">
-                    <div class="matrix-title">Matriz Visual Diagnóstica (Líneas / Conceptos Principales)</div>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead><tr id="matrix-header-row"><th>Línea</th></tr></thead>
-                            <tbody id="matrix-body"></tbody>
-                        </table>
+        <div id="pestana1" class="tab-content active">
+            <div class="blocks-summary-grid">
+                <div class="summary-card">
+                    <h3>📦 Bloque Módulos Nucleares</h3>
+                    <div class="stat-row"><span>Adopción Estricta:</span><span id="score-nucleares">0%</span></div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-nucleares"></div></div>
+                </div>
+                <div class="summary-card">
+                    <h3>💰 Bloque Módulos Financieros</h3>
+                    <div class="stat-row"><span>Adopción Estricta:</span><span id="score-financieros">0%</span></div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-financieros"></div></div>
+                </div>
+                <div class="summary-card">
+                    <h3>⚙️ Bloque Módulos Auxiliares</h3>
+                    <div class="stat-row"><span>Adopción Estricta:</span><span id="score-auxiliares">0%</span></div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-auxiliares"></div></div>
+                </div>
+                <div class="summary-card" style="border-color:#bfdbfe; background:#f0f9ff;">
+                    <h3>🚀 Bloque Prosuite</h3>
+                    <div class="stat-row"><span>Adopción Estricta:</span><span id="score-prosuite">0%</span></div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-prosuite" style="background:#2563eb;"></div></div>
+                </div>
+            </div>
+
+            <div class="graphics-layout-grid">
+                <div class="matrix-section">
+                    <div class="matrix-header-bar"><span>Matriz Visual Diagnóstica (Líneas / Conceptos Principales)</span></div>
+                    <div class="matrix-body-layout">
+                        <div class="grid-table-wrapper"><div class="cmmi-grid-table" id="cmmi-visual-grid"></div></div>
+                        <div class="matrix-legend-card">
+                            <div class="legend-title">Nivel de Adopción</div>
+                            <div class="legend-flex-row"><div class="legend-color-box c-NR"></div> <strong>NR:</strong> Sin Evaluar</div>
+                            <div class="legend-flex-row"><div class="legend-color-box c-NY"></div> <strong>NY:</strong> No Imp (Falla Crítica)</div>
+                            <div class="legend-flex-row"><div class="legend-color-box c-PI"></div> <strong>PI:</strong> Parcial</div>
+                            <div class="legend-flex-row"><div class="legend-color-box c-LI"></div> <strong>LI:</strong> Mayoría</div>
+                            <div class="legend-flex-row"><div class="legend-color-box c-FI"></div> <strong>FI:</strong> Total</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="matrix-box">
-                    <div class="matrix-title">Matriz de Impacto Transversal</div>
-                    <table>
-                        <thead>
-                            <tr><th>Eje / Pilar</th><th style="color:#dc2626">CRÍTICO</th><th style="color:#f97316">ALTO</th><th style="color:#b45309">MEDIO</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td class="col-fixed-left">Gobernanza</td><td id="t-gob-ny">0</td><td id="t-gob-pi">0</td><td id="t-gob-li">0</td></tr>
-                            <tr><td class="col-fixed-left">Alineación</td><td id="t-ali-ny">0</td><td id="t-ali-pi">0</td><td id="t-ali-li">0</td></tr>
-                            <tr><td class="col-fixed-left">Cultura</td><td id="t-cul-ny">0</td><td id="t-cul-pi">0</td><td id="t-cul-li">0</td></tr>
-                            <tr><td class="col-fixed-left">Tecnología</td><td id="t-tec-ny">0</td><td id="t-tec-pi">0</td><td id="t-tec-li">0</td></tr>
-                        </tbody>
-                    </table>
+                <div class="matrix-section" style="border-color: #334155;">
+                    <div class="matrix-header-bar" style="background: #0f172a;"><span>Matriz de Impacto Transversal</span></div>
+                    <div style="padding: 20px;">
+                        <div class="transversal-grid-table" id="transversal-visual-grid">
+                            <div class="trans-row">
+                                <div class="trans-cell header-cell">Eje / Pilar</div>
+                                <div class="trans-cell header-cell" style="color:#dc2626;">CRÍTICO</div>
+                                <div class="trans-cell header-cell" style="color:#ea580c;">ALTO</div>
+                                <div class="trans-cell header-cell" style="color:#854d0e;">MEDIO</div>
+                            </div>
+                            <div class="trans-row"><div class="trans-cell side-cell">Gobernanza</div><div class="trans-cell no-finding" id="matrix-Gobernanza-CRÍTICO">0</div><div class="trans-cell no-finding" id="matrix-Gobernanza-ALTO">0</div><div class="trans-cell no-finding" id="matrix-Gobernanza-MEDIO">0</div></div>
+                            <div class="trans-row"><div class="trans-cell side-cell">Alineación</div><div class="trans-cell no-finding" id="matrix-Alineacion-CRÍTICO">0</div><div class="trans-cell no-finding" id="matrix-Alineacion-ALTO">0</div><div class="trans-cell no-finding" id="matrix-Alineacion-MEDIO">0</div></div>
+                            <div class="trans-row"><div class="trans-cell side-cell">Cultura</div><div class="trans-cell no-finding" id="matrix-Cultura-CRÍTICO">0</div><div class="trans-cell no-finding" id="matrix-Cultura-ALTO">0</div><div class="trans-cell no-finding" id="matrix-Cultura-MEDIO">0</div></div>
+                            <div class="trans-row"><div class="trans-cell side-cell">Tecnología</div><div class="trans-cell no-finding" id="matrix-Tecnologia-CRÍTICO">0</div><div class="trans-cell no-finding" id="matrix-Tecnologia-ALTO">0</div><div class="trans-cell no-finding" id="matrix-Tecnologia-MEDIO">0</div></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div id="tab-bloques" class="tab-content">
-            <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                <label style="font-weight: bold;">Módulo Seleccionado:</label>
-                <select id="selector-modulo-block" class="selector-modulo-inline" onchange="seleccionarModuloInterno(this.value)"></select>
-                <button class="btn-action" style="background:#ea580c" onclick="inyectarSemillaCompleta()">🌱 Cargar Todos los Puntos del Word Original</button>
-            </div>
-            <div id="module-editor-container"></div>
-        </div>
+        <div id="pestana3" class="tab-content"><div id="block-container-nucleares"></div></div>
+        <div id="pestana4" class="tab-content"><div id="block-container-financieros"></div></div>
+        <div id="pestana5" class="tab-content"><div id="block-container-auxiliares"></div></div>
+        <div id="pestana6" class="tab-content"><div id="block-container-prosuite"></div></div>
 
-        <div id="tab-transversal" class="tab-content">
-            <div class="framework-header">🚀 Framework de Diagnóstico Transversal e Inconsistencias Mapeadas</div>
-            <div id="framework-ejes-container"></div>
+        <div id="pestana7" class="tab-content">
+            <div class="matrix-legend-card" style="background:white; margin-bottom:25px; border-left: 5px solid #3b71ca;">
+                <h2 style="margin:0 0 5px 0; color:var(--primary); font-size:16px;">🔬 Framework de Diagnóstico Transversal e Inconsistencias Mapeadas</h2>
+            </div>
+            <div id="diagnostico-bloques-wrapper"></div>
         </div>
     </div>
 
     <script>
-        const supabaseUrl = 'https://ezzuuffneepigvinjqxi.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6enV1ZmZuZWVwaWd2aW5qcXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNDQyMjYsImV4cCI6MjA5ODYyMDIyNn0.Tv3yxI0s5iyw53F4DQN7iLMB4v_9ZUnhvtAQpKbVG5w';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-        const listadoModulos = [
-            { key: 'trafico', name: 'Tráfico', block: 'nucleares' },
-            { key: 'facturacion', name: 'Facturación', block: 'nucleares' },
-            { key: 'liquidaciones', name: 'Liquidaciones', block: 'nucleares' },
-            { key: 'vigilancia', name: 'Vigilancia', block: 'nucleares' },
-            { key: 'rastreo', name: 'Rastreo Sat.', block: 'nucleares' },
-            { key: 'admin', name: 'Admin. Sistema', block: 'financieros' },
-            { key: 'cxc', name: 'Cuentas x Cobrar', block: 'financieros' },
-            { key: 'cxp', name: 'Cuentas x Pagar', block: 'financieros' },
-            { key: 'bancos', name: 'Control Bancario', block: 'financieros' },
-            { key: 'caja', name: 'Caja Chica', block: 'financieros' },
-            { key: 'activo', name: 'Activo Fijo', block: 'financieros' },
-            { key: 'contabilidad', name: 'Contabilidad', block: 'financieros' },
-            { key: 'compras', name: 'Compras', block: 'auxiliares' },
-            { key: 'almacen', name: 'Almacén', block: 'auxiliares' },
-            { key: 'mantenimiento', name: 'Mantenimiento', block: 'auxiliares' },
-            { key: 'llantas', name: 'Llantas', block: 'auxiliares' },
-            { key: 'drivelog', name: 'Drivelog', block: 'prosuite' },
-            { key: 'security', name: 'Securitylog', block: 'prosuite' },
-            { key: 'analytics', name: 'Analytics', block: 'prosuite' },
-            { key: 'edi', name: 'EDI', block: 'prosuite' }
+        const modulesList = [
+            'trafico', 'facturacion', 'liquidaciones', 'vigilancia', 'rastreo', 'administracion',
+            'cxc', 'cxp', 'bancos', 'cajachica', 'activofijo', 'contabilidad',
+            'compras', 'almacen', 'mantenimiento', 'llantas',
+            'drivelog', 'securitylog', 'analytics', 'edi'
         ];
 
-        const semillaTemarioWord = [
-            { modulo: "trafico", texto: "Ciclo de Servicio Operativo y Documental", pos: "pos_1", pilar: "Alineación", sub: ["Revisión de catálogos principales", "Generación de orden de servicio", "Creación de bitácora de viaje (Asignación de recursos)", "Consideraciones para complemento de carta porte", "Asignación de carta porte", "Seguimiento ciclo de servicio", "Cierre de viaje operativo", "Cierre de viaje documental", "Generación CXP combustible", "Principales consultas y reportes"] },
-            { modulo: "facturacion", texto: "Bandejas de Timbrado y Cancelación Fiscal", pos: "pos_1", pilar: "Alineación", sub: ["Revisión de catálogos principales", "Generación de factura a partir de una orden de servicio", "Generación de factura especial", "Generación factura adicional", "Proceso de cancelación de facturas", "Generación de contra recibo", "Revisión de bandeja de timbrado", "Revisión de bandeja de cancelaciones", "Principales reportes"] },
-            { modulo: "liquidaciones", texto: "Proceso de Liquidaciones y Tabuladores de Operador", pos: "pos_1", pilar: "Gobernanza", sub: ["Catálogos que intervienen en el módulo", "Generación de tabuladores", "Generación de deducciones programadas", "Proceso de liquidación", "Liga de información electrónica", "Proceso de cancelación", "Proceso de contabilización", "Proceso para cancelación de póliza", "Principales consultas y reportes"] },
-            { modulo: "vigilancia", texto: "Bitácora y Control de Accesos", pos: "pos_1", pilar: "Tecnología", sub: ["Revisión de catálogos", "Registro de entradas", "Registro de Salidas", "Reportes del módulo"] },
-            { modulo: "rastreo", texto: "Monitoreo, Geocercas y Posiciones Satelitales", pos: "pos_1", pilar: "Tecnología", sub: ["Catálogos del módulo", "Ventana de procesos", "Puntos de interés", "Geocercas", "Vista posiciones", "Notificaciones"] },
-            { modulo: "admin", texto: "Seguridad, Perfiles y Segregación de Roles", pos: "pos_1", pilar: "Gobernanza", sub: ["Catálogos del módulo", "Creación de usuarios", "Creación de grupos", "Asignación de privilegios", "Asignación de firmas electrónicas para procesos especiales", "Baja de usuarios", "Control de folios", "Bitácoras de accesos"] },
-            { modulo: "cxc", texto: "Aplicación de Cobranza y Recibos Electrónicos (REP)", pos: "pos_1", pilar: "Alineación", sub: ["Revisión de catálogos principales", "Contabilización de facturas", "Aplicación de cobranza", "Aplicaciones especiales", "Aplicación de notas de crédito", "Aplicación de anticipo de clientes", "Cancelación de aplicaciones", "Timbrado de recibo de cobro", "Principales reportes"] },
-            { modulo: "cxp", texto: "Procesamiento de XML y Contra Recibos", pos: "pos_1", pilar: "Alineación", sub: ["Revisión de catálogos principales", "Generación de contra recibo", "Generación de CXP a través de un XML", "Generación de una CXP", "Aplicación especial", "Aplicación de nota de crédito", "Principales reportes"] },
-            { modulo: "bancos", texto: "Conciliación Bancaria y Dispersión de Anticipos", pos: "pos_1", pilar: "Gobernanza", sub: ["Revisión de catálogos principales", "Pago de vales de anticipo", "Registro de pago directo", "Registro de pago a CXP", "Registro de comisiones bancarias", "Traspasos bancarios", "Registro de ingresos directos", "Cancelación de pólizas", "Conciliación bancaria", "Conciliación de Complemento de pagos", "Principales reportes y consultas"] },
-            { modulo: "caja", texto: "Fondo Fijo y Comprobaciones de Anticipos", pos: "pos_1", pilar: "Alineación", sub: ["Apertura de fondo fijo", "Revisión de catálogos principales", "Registro de pago directo", "Registro de vales de anticipo a operadores", "Registro de anticipo por comprobar", "Registro de comprobación de anticipos", "Generación de reembolso", "Cancelación de póliza de reembolso", "Principales reportes"] },
-            { modulo: "activo", texto: "Depreciaciones y Control de Activo Fijo", pos: "pos_1", pilar: "Gobernanza", sub: ["Catálogos del módulo", "Alta de activos fijos", "Bajas de activo fijo", "Registro de Mejoras", "Depreciaciones", "Contabilización de depreciaciones", "Principales reportes"] },
-            { modulo: "contabilidad", texto: "Pólizas de Diario y Cierre de Periodos Contables", pos: "pos_1", pilar: "Gobernanza", sub: ["Revisión de catálogos principales", "Apertura de periodos contables", "Generación de póliza de saldos iniciales", "Generación de pólizas de diario", "Aplicación de pólizas", "Cancelación de pólizas", "Configuración de estados financieros", "Principales consultas y reportes"] },
-            { modulo: "compras", texto: "Flujo de Abastecimiento, Autorizaciones y Órdenes de Compra", pos: "pos_1", pilar: "Alineación", sub: ["Catálogos que intervienen en el módulo", "Generación de pedido y autorización", "Generación de cotización y autorización", "Generación de orden de compra y autorización", "Generación de recepción", "Contabilización de recepción", "Cancelación de recepción", "Cargo directo al almacén", "Devolución de compras", "Principales consultas y reportes"] },
-            { modulo: "almacen", texto: "Inventario Físico, Entradas y Salidas", pos: "pos_1", pilar: "Alineación", sub: ["Catálogos que intervienen en el módulo", "Generación de pedidos", "Registro de entradas al almacén", "Registro de salidas del almacén", "Contabilización de entradas y salidas", "Registro del inventario físico", "Principales consultas y reportes"] },
-            { modulo: "mantenimiento", texto: "Preventivos y Órdenes de Trabajo (OT)", pos: "pos_1", pilar: "Cultura", sub: ["Catálogos que intervienen en el módulo", "Preventivos programados", "Consulta de mantenimientos programados", "Generación de orden de trabajo", "Seguimiento de acciones", "Solicitud de insumos al almacén", "Cierre de orden de trabajo", "Proceso para interrumpir una orden de trabajo", "Registro de facturas de mantenimiento externo", "Autorización y contabilización de facturas externas", "Principales consultas y reportes"] },
-            { modulo: "llantas", texto: "Lecturas de Profundidad y Renovado de Llantas", pos: "pos_1", pilar: "Cultura", sub: ["Catálogos que intervienen en el módulo", "Proceso de montaje de llantas", "Proceso para rotación de llantas", "Proceso para desmontaje de llantas", "Generación orden de reparación de llantas interno", "Generación de orden de reparación de llantas externa", "Proceso para registro de lectura de profundidad", "Generación orden de renovado", "Generación de CXP de renovado", "Envío a deshecho", "Contabilización de montajes", "Principales consultas y reportes"] }
+        const blocksMapping = {
+            nucleares: ['trafico', 'facturacion', 'liquidaciones', 'vigilancia', 'rastreo', 'administracion'],
+            financieros: ['cxc', 'cxp', 'bancos', 'cajachica', 'activofijo', 'contabilidad'],
+            auxiliares: ['compras', 'almacen', 'mantenimiento', 'llantas'],
+            prosuite: ['drivelog', 'securitylog', 'analytics', 'edi']
+        };
+
+        const moduleMeta = {
+            trafico: { title: "1. Tráfico" }, facturacion: { title: "2. Facturación" }, liquidaciones: { title: "3. Liquidaciones" },
+            vigilancia: { title: "4. Vigilancia" }, rastreo: { title: "5. Rastreo Satelital" }, administracion: { title: "6. Admin. Sistema" },
+            cxc: { title: "7. Cuentas por Cobrar" }, cxp: { title: "8. Cuentas por Pagar" }, bancos: { title: "9. Control Bancario" },
+            cajachica: { title: "10. Caja Chica" }, activofijo: { title: "11. Activo Fijo" }, contabilidad: { title: "12. Contabilidad" },
+            compras: { title: "13. Compras" }, almacen: { title: "14. Almacén" }, mantenimiento: { title: "15. Mantenimiento" }, llantas: { title: "16. Llantas" },
+            drivelog: { title: "17. Drivelog", isPro: true }, securitylog: { title: "18. Securitylog", isPro: true }, analytics: { title: "19. Analytics", isPro: true }, edi: { title: "20. EDI", isPro: true }
+        };
+
+        // ÁRBOL DE DATOS BASE - DOCUMENTADO DESDE LA MATRIZ DE APPRAISAL TÉCNICO
+        let erpTreeSchema = {
+            trafico: [
+                { texto: "Revisión de catálogos principales", subconceptos: [{ texto: "Operadores y licencias vigentes", eval: "NR" }, { texto: "Estructura de unidades y remolques", eval: "NR" }, { texto: "Configuración de rutas y casetas", eval: "NR" }] },
+                { texto: "Generación de orden de servicio", subconceptos: [{ texto: "Asignación de viajes e inputs de clientes", eval: "NR" }] },
+                { texto: "Creación de bitácora de viaje", subconceptos: [{ texto: "Eventos en ruta y estatus operativos", eval: "NR" }] },
+                { texto: "Consideraciones para carta porte", subconceptos: [{ texto: "Mapeo de claves SAT y complementos", eval: "NR" }] },
+                { texto: "Cierre de viaje operativo", subconceptos: [{ texto: "Validación de kilómetros y tiempos de arribo", eval: "NR" }] }
+            ],
+            facturacion: [
+                { texto: "Revisión de catálogos principales", subconceptos: [{ texto: "Regímenes fiscales de clientes", eval: "NR" }] },
+                { texto: "Generación de factura desde orden", subconceptos: [{ texto: "Conciliación previa de folios operativos", eval: "NR" }] },
+                { texto: "Bandeja de timbrado", subconceptos: [{ texto: "Control de errores de conexión PAC", eval: "NR" }] }
+            ],
+            liquidaciones: [
+                { texto: "Catálogos del módulo", subconceptos: [{ texto: "Tabuladores por ruta y tipo de unidad", eval: "NR" }] },
+                { texto: "Generación de tabuladores", subconceptos: [{ texto: "Políticas de anticipos y vales diésel", eval: "NR" }] },
+                { texto: "Proceso de liquidación de viajes", subconceptos: [{ texto: "Descuento de incidencias y comprobación de gastos", eval: "NR" }] }
+            ],
+            vigilancia: [
+                { texto: "Registro de entradas", subconceptos: [{ texto: "Inspección de seguridad e ingreso a patio", eval: "NR" }] },
+                { texto: "Registro de Salidas", subconceptos: [{ texto: "Liberación documental de la unidad", eval: "NR" }] }
+            ],
+            rastreo: [
+                { texto: "Catálogos del módulo", subconceptos: [{ texto: "Asociación de IDs de GPS a remolques", eval: "NR" }] },
+                { texto: "Ventana de procesos", subconceptos: [{ texto: "Refresco automático de posiciones en mapa", eval: "NR" }] },
+                { texto: "Geocercas", subconceptos: [{ texto: "Alertamiento por desvío de ruta autorizada", eval: "NR" }] }
+            ],
+            administracion: [
+                { texto: "Creación de usuarios", subconceptos: [{ texto: "Estructura corporativa y roles", eval: "NR" }] },
+                { texto: "Asignación de privilegios", subconceptos: [{ texto: "Restricción de campos sensibles e importes", eval: "NR" }] },
+                { texto: "Bitácoras de accesos", subconceptos: [{ texto: "Monitoreo de transacciones e IPs logueadas", eval: "NR" }] }
+            ],
+            cxc: [
+                { texto: "Contabilización de facturas", subconceptos: [{ texto: "Provisiones automáticas en cartera", eval: "NR" }] },
+                { texto: "Aplicación de cobranza", subconceptos: [{ texto: "Identificación de notas de crédito y saldos", eval: "NR" }] },
+                { texto: "Timbrado de recibo de cobro", subconceptos: [{ texto: "Generación del complemento de pago REP", eval: "NR" }] }
+            ],
+            cxp: [
+                { texto: "Generación de contra recibo", subconceptos: [{ texto: "Validación de facturas de proveedores logísticos", eval: "NR" }] },
+                { texto: "CXP a través de XML", subconceptos: [{ texto: "Validación de esquema estructural ante el SAT", eval: "NR" }] }
+            ],
+            bancos: [
+                { texto: "Pago de vales de anticipo", subconceptos: [{ texto: "Dispersión de efectivo a operadores", eval: "NR" }] },
+                { texto: "Conciliación bancaria", subconceptos: [{ texto: "Carga automatizada de estados de cuenta electrónicos", eval: "NR" }] },
+                { texto: "Reportes y consultas", subconceptos: [{ texto: "Flujo de caja e historial transaccional", eval: "NR" }] }
+            ],
+            cajachica: [
+                { texto: "Apertura de fondo fijo", subconceptos: [{ texto: "Asignación de custodio y montos límite", eval: "NR" }] },
+                { texto: "Registro de comprobaciones", subconceptos: [{ texto: "Validación de gastos deducibles y XMLs", eval: "NR" }] },
+                { texto: "Generación de reembolso", subconceptos: [{ texto: "Cierre de arqueo mensual", eval: "NR" }] }
+            ],
+            activofijo: [
+                { texto: "Alta de activos fijos", subconceptos: [{ texto: "Clasificación de tractos, cajas y utilitarios", eval: "NR" }] },
+                { texto: "Depreciaciones contables", subconceptos: [{ texto: "Cálculo mensual automatizado bajo ISR", eval: "NR" }] }
+            ],
+            contabilidad: [
+                { texto: "Apertura de periodos", subconceptos: [{ texto: "Bloqueo operativo para evitar capturas extemporáneas", eval: "NR" }] },
+                { texto: "Generación de pólizas de diario", subconceptos: [{ texto: "Interfaces contables nativas desde operaciones", eval: "NR" }] },
+                { texto: "Estados financieros", subconceptos: [{ texto: "Balanza de comprobación, Estado de Resultados", eval: "NR" }] }
+            ],
+            compras: [
+                { texto: "Generación de orden de compra", subconceptos: [{ texto: "Límites de cotización por refacción o insumo", eval: "NR" }] },
+                { texto: "Autorizaciones", subconceptos: [{ texto: "Flujo jerárquico de firmas electrónicas", eval: "NR" }] },
+                { texto: "Recepciones de Almacén", subconceptos: [{ texto: "Verificación física vs orden aprobada", eval: "NR" }] }
+            ],
+            almacen: [
+                { texto: "Registro de entradas", subconceptos: [{ texto: "Ingreso de refacciones por compra o traspaso", eval: "NR" }] },
+                { texto: "Registro de salidas", subconceptos: [{ texto: "Asignación a la orden de trabajo del tracto", eval: "NR" }] },
+                { texto: "Inventario físico", subconceptos: [{ texto: "Cotejo de conteo ciego vs stock lógico", eval: "NR" }] }
+            ],
+            mantenimiento: [
+                { texto: "Preventivos programados", subconceptos: [{ texto: "Rutinas de kilometraje y tiempos de motor", eval: "NR" }] },
+                { texto: "Orden de trabajo", subconceptos: [{ texto: "Mapeo de fallas mecánicas detectadas en viaje", eval: "NR" }] },
+                { texto: "Cierre de OT", subconceptos: [{ texto: "Liberación técnica de la flota operativa", eval: "NR" }] }
+            ],
+            llantas: [
+                { texto: "Montaje de llantas", subconceptos: [{ texto: "Asignación por número de serie económico", eval: "NR" }] },
+                { texto: "Rotación y desgastes", subconceptos: [{ texto: "Mapeo en semáforo de vida útil de piso", eval: "NR" }] },
+                { texto: "Lectura de profundidad", subconceptos: [{ texto: "Registro de milímetros remanentes", eval: "NR" }] }
+            ],
+            drivelog: [{ texto: "Configuración HOS conductores", subconceptos: [{ texto: "Cumplimiento normativo de descansos", eval: "NR" }] }, { texto: "Monitoreo horas de servicio", subconceptos: [{ texto: "Lectura directa mediante telemetría", eval: "NR" }] }],
+            securitylog: [{ texto: "Control de accesos críticos", subconceptos: [{ texto: "Alertas por cambios de parámetros financieros", eval: "NR" }] }, { texto: "Auditoría de logs globales", subconceptos: [{ texto: "Rastreo de borrado de registros", eval: "NR" }] }],
+            analytics: [{ texto: "Tableros de control de KPIs", subconceptos: [{ texto: "Cálculo de rentabilidad por ruta y cliente", eval: "NR" }] }, { texto: "Rentabilidad de rutas", subconceptos: [{ texto: "Integración de variables de costo diésel", eval: "NR" }] }],
+            edi: [{ texto: "Mapeo de transacciones estándares", subconceptos: [{ texto: "Intercambio de archivos 214, 210 y 204", eval: "NR" }] }, { texto: "Sincronización automatizada", subconceptos: [{ texto: "Inyección automática a la cola de Tráfico", eval: "NR" }] }]
+        };
+
+        const defaultTransversales = [
+            { pilar:"Gobernanza", concepto:"Brecha de Madurez Organizacional en Descriptivos de Puesto", impacto:"ALTO", incons:"Las funciones reales del personal hoy en día omiten la obligación de asegurar y medir la correcta captura en el ERP.", accion:"Actualizar perfiles de puesto vinculando el uso oportuno del ERP a las evaluaciones anuales de desempeño." },
+            { pilar:"Gobernanza", concepto:"Ausencia de Segregación de Funciones (SoD)", impacto:"CRÍTICO", incons:"Una misma persona hace, autoriza y revisa operaciones críticas dentro del sistema.", accion:"Separar los roles operativos de los privilegios financieros en el organigrama corporativo." },
+            { pilar:"Gobernanza", concepto:"Falta de Comité de Cambios (CAB) para Configuraciones Críticas", impacto:"MEDIO", incons:"Se alteran parámetros de facturación o flujos clave de almacén sin previa validación multi-departamental.", accion:"Instituir juntas quincenales de control de configuración con minutas de aprobación formal." },
+            { pilar:"Gobernanza", concepto:"Falta de un Líder de Proyecto / Key User interno por área", impacto:"ALTO", incons:"No hay una estructura jerárquica clara para resolver dudas operativas del sistema de primera instancia.", accion:"Nombrar y certificar un súper usuario por cada departamento crítico para dar soporte interno inmediato." },
+            { pilar:"Gobernanza", concepto:"Inexistencia de Auditoría de Cuentas de Usuario Inactivas", impacto:"CRÍTICO", incons:"Usuarios que ya no laboran en la empresa conservan perfiles y contraseñas de acceso al ERP activos.", accion:"Implementar una política de baja inmediata automatizada coordinada con el departamento de Capital Humano." },
+            { pilar:"Gobernanza", concepto:"Ausencia de un Repositorio Único de Datos Históricos", impacto:"MEDIO", incons:"Múltiples versiones de la verdad en reportes financieros debido a consultas aisladas sin estructura de gobierno.", accion:"Unificar los criterios de consulta de bases de datos mediante vistas certificadas por el área de TI." },
+            { pilar:"Alineacion", concepto:"Asincronía en el Ciclo Documental (Desfase Operativo-Contable)", impacto:"CRÍTICO", incons:"El despacho físico ocurre al instante en patio, pero el registro formal contable se procesa hasta 15 días después.", accion:"Establecer políticas operativas drásticas obligando al cierre del módulo de liquidación de viajes de forma diaria." },
+            { pilar:"Alineacion", concepto:"Bucle de Devoluciones no Mapeado en Flujo de Almacén", impacto:"ALTO", incons:"El rechazo de refacciones regresa a stock físico pero no se concilia de manera automatizada en sistema, alterando costos.", accion:"Reconfigurar el submódulo de inventarios con aprobaciones rápidas mediante escaneo móvil." },
+            { pilar:"Alineacion", concepto:"Omisión del Registro de Mantenimiento Preventivo en Tiempo Real", impacto:"CRÍTICO", incons:"Las órdenes de trabajo se capturan días después de que la unidad salió del taller, falseando disponibilidad de flota.", accion:"Instalar terminales físicas de captura o quioscos en el área de taller para mecánicos." },
+            { pilar:"Alineacion", concepto:"Duplicidad en Catálogos de Clientes y Proveedores", impacto:"ALTO", incons:"Falta de validación fiscal previa en el ERP que permite crear múltiples registros del mismo RFC.", accion:"Activar la validación obligatoria del RFC antes de permitir el guardado de un nuevo registro en el sistema." },
+            { pilar:"Alineacion", concepto:"Falta de Match de 3 Vías en Compras (Orden-Recepción-Factura)", impacto:"MEDIO", incons:"Se autorizan pagos a proveedores sin que el sistema valide que la mercancía fue recibida por almacén.", accion:"Forzar por sistema que el módulo de cuentas por pagar requiera de forma mandatoria la orden y su entrada en almacén." },
+            { pilar:"Cultura", concepto:"Síndrome de la 'Isla de Confort' (Dependencia Crónica de Excel)", impacto:"ALTO", incons:"Hábito profundamente arraigado de llevar un registro paralelo en hojas de cálculo por desconfianza heredada al sistema.", accion:"Establecer que las juntas operativas de resultados se basarán única y exclusivamente en pantallas nativas." },
+            { pilar:"Cultura", concepto:"Resistencia Pasiva por Falta de Plan de Incentivos Digitales", impacto:"MEDIO", incons:"Los usuarios retrasan intencionalmente la captura debido a que no ven el impacto directo en sus KPIs personales.", accion:"Diseñar un bono de precisión de inventarios y datos operativos basado en reportes directos del sistema." },
+            { pilar:"Cultura", concepto:"Rotación de Personal sin Proceso de Onboarding en el ERP", impacto:"CRÍTICO", incons:"Los nuevos empleados aprenden el uso del sistema mediante explicaciones informales de compañeros, heredando vicios.", accion:"Crear manuales digitales obligatorios y un programa de certificación interna básico previo al uso de producción." },
+            { pilar:"Cultura", concepto:"Falta de Comunicación Interdepartamental ante Errores de Captura", impacto:"MEDIO", incons:"Tráfico culpa a Facturación por errores en cartas porte sin sentarse a revisar las configuraciones iniciales.", accion:"Implementar minutas de conciliación operativas semanales para analizar cuellos de botella informáticos." },
+            { pilar:"Cultura", concepto:"Percepción del ERP como una Herramienta de Fiscalización y No de Apoyo", impacto:"ALTO", incons:"El personal operativo siente que el sistema se usa para vigilarlos, por lo que sabotean u omiten registros.", accion:"Realizar talleres de concientización demostrando cómo el sistema les ahorra tiempo si la captura inicial es correcta." },
+            { pilar:"Tecnologia", concepto:"Redundancia de Captura Manual por Falta de Interfaces", impacto:"CRÍTICO", incons:"El personal gasta el 80% de su tiempo copiando manualmente datos de una pantalla a otra.", accion:"Desarrollar y activar de forma urgente integraciones automatizadas vía Web Service / API con proveedores estratégicos." },
+            { pilar:"Tecnologia", concepto:"Subutilización de Alertas y Notificaciones Push Automáticas", impacto:"MEDIO", incons:"Las demoras críticas en ruta o desviaciones de combustible dependen de una revisión visual en pantallas fijas.", accion:"Habilitar triggers de correo y Telegram corporativo automatizados para incidencias de prioridad alta." },
+            { pilar:"Tecnologia", concepto:"Falta de Respaldos Automatizados en Entornos de Pruebas / Sandbox", impacto:"ALTO", incons:"Las configuraciones y simulaciones complejas de costos se pierden periódicamente al no existir políticas de backup locales.", accion:"Programar scripts automáticos semanales de resguardo para la base de datos simulada." },
+            { pilar:"Tecnologia", concepto:"Infraestructura de Red Intermitente en Puntos de Control y Patio", impacto:"CRÍTICO", incons:"La caseta de vigilancia pierde conexión constantemente, retrasando los registros de entradas y salidas en el ERP.", accion:"Instalar cableado estructurado industrial o Access Points dedicados de alta disponibilidad en áreas externas." },
+            { pilar:"Tecnologia", concepto:"Incompatibilidad de Versiones de Navegadores con Módulos Web", impacto:"MEDIO", incons:"Ciertos reportes gráficos se desconfiguran visualmente porque los equipos de cómputo usan navegadores obsoletos.", accion:"Homologar el uso corporativo de una versión estable de navegador mediante políticas centralizadas de TI." }
         ];
 
-        const estructuraEjesTransversales = [
-            { titulo: "📋 1. Eje: Gobernanza, Estructura y Organigrama", pilar: "Gobernanza", conceptos: ["Brecha de Madurez Organizacional en Descriptivos de Puesto", "Ausencia de Segregación de Funciones (SoD)", "Falta de Comité de Cambios (CAB) para Configuraciones Críticas", "Falta de un Líder de Proyecto / Key User interno por área", "Inexistencia de Auditoría de Cuentas de Usuario Inactivas", "Ausencia de un Repositorio Único de Datos Históricos"] },
-            { titulo: "🔄 2. Eje: Alineación de Procesos (Flujo vs Software)", pilar: "Alineación", conceptos: ["Asincronía en el Ciclo Documental (Desfase Operativo-Contable)", "Duplicidad de Captura de Información en Hojas de Cálculo Alternas", "Falta de Estandarización de Códigos de Falla y Paros", "Desconexión entre Presupuestos y Órdenes de Compra Reales"] },
-            { titulo: "👥 3. Eje: Cultura Organizacional y Gestión del Cambio", pilar: "Cultura", conceptos: ["Resistencia al Cambio Operativo por Fricción Tecnológica", "Brecha de Capacitación Continua en Nuevas Versiones", "Falta de Incentivos Asociados a la Disciplina de Captura de Datos"] },
-            { titulo: "💻 4. Eje: Arquitectura Tecnológica e Infraestructura Cloud", pilar: "Tecnología", conceptos: ["Intermitencia en APIs de Conexión de Terceros / Proveedores", "Incompatibilidad de Protocolos Legados con la Suite Realtime", "Ausencia de Políticas Robustas de Respaldos Cruzados Automáticos"] }
-        ];
-
-        let baseDatosLocal = [];
-        let bloqueActivo = 'nucleares';
-        let moduloActivo = 'trafico';
-
-        function getClienteId() { return document.getElementById('client-id-input').value.trim() || 'demo'; }
-
-        async function loadAllData() {
-            const statusEl = document.getElementById('cloud-status');
-            statusEl.innerText = "🔄 Sincronizando...";
-            try {
-                let { data: conceptos, error } = await _supabase
-                    .from('conceptos_padre')
-                    .select('id, modulo_key, texto, eval_manual, posicion_fila, pilar_transversal, notas, subconceptos_hijo(id, texto, eval)')
-                    .eq('cliente_id', getClienteId());
-
-                if (error) throw error;
-                baseDatosLocal = conceptos || [];
-                calcularYRenderizarTodo();
-                statusEl.innerText = "🟢 Conectado Cloud";
-                statusEl.style.color = "#16a34a";
-            } catch (err) {
-                console.error(err);
-                statusEl.innerText = "🔴 Error de Red";
-                statusEl.style.color = "#dc2626";
+        function initMatrixGrid() {
+            const gridElement = document.getElementById('cmmi-visual-grid');
+            gridElement.innerHTML = `<div class="grid-row"><div class="grid-cell label-side" style="font-weight:800;">Línea</div></div>`;
+            const headerRow = gridElement.querySelector('.grid-row');
+            modulesList.forEach(mod => {
+                headerRow.innerHTML += `<div class="grid-cell label-top ${moduleMeta[mod].isPro?'prosuite-col':''}" title="${moduleMeta[mod].title}">${moduleMeta[mod].title.split('.')[1]}</div>`;
+            });
+            for (let idx = 1; idx <= 12; idx++) {
+                const row = document.createElement('div'); row.className = 'grid-row';
+                row.innerHTML = `<div class="grid-cell label-side">Pos ${idx}</div>`;
+                modulesList.forEach(mod => { row.innerHTML += `<div class="grid-cell c-NR" id="cell-${mod}-${idx}">-</div>`; });
+                gridElement.appendChild(row);
             }
         }
 
-        function getMaturity(parent) {
-            if (!parent) return "NR";
-            if (!parent.subconceptos_hijo || parent.subconceptos_hijo.length === 0) return parent.eval_manual || "NR";
-            let hasNY = false, hasPI = false, hasLI = false;
-            parent.subconceptos_hijo.forEach(h => {
-                if (h.eval === "NY") hasNY = true;
-                else if (h.eval === "PI") hasPI = true;
-                else if (h.eval === "LI") hasLI = true;
+        function renderHierarchicalTables() {
+            for (let blockName in blocksMapping) {
+                const container = document.getElementById(`block-container-${blockName}`);
+                if (!container) continue; container.innerHTML = "";
+
+                blocksMapping[blockName].forEach(modKey => {
+                    const meta = moduleMeta[modKey];
+                    const wrapper = document.createElement('div'); wrapper.style.marginBottom = "30px";
+                    
+                    wrapper.innerHTML = `
+                        <div class="module-row-header ${meta.isPro ? 'prosuite-header' : ''}">
+                            <span>${meta.title.toUpperCase()}</span>
+                            <button class="btn-action btn-add-parent" onclick="addParentConcept('${modKey}')">➕ Añadir Concepto Principal</button>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%">ID</th>
+                                    <th style="width: 45%">Concepto Base / Lineamientos Hijos</th>
+                                    <th style="width: 20%">Calificación Operativa (Lógica del Eslabón Crítico)</th>
+                                    <th style="width: 30%">Notas Técnicas y Evidencias</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-${modKey}"></tbody>
+                        </table>
+                    `;
+                    container.appendChild(wrapper);
+                    refreshModuleRows(modKey);
+                });
+            }
+        }
+
+        // NUEVA LÓGICA DE CALIFICACIÓN DE MADUREZ: REGLA DEL ESLABÓN MÁS DÉBIL (CRITICIDAD SUCESIVA)
+        function calculateStrictMaturity(parent) {
+            if (!parent.subconceptos || parent.subconceptos.length === 0) {
+                return parent.eval || "NR";
+            }
+
+            let hasNR = false;
+            let hasNY = false;
+            let hasPI = false;
+            let hasLI = false;
+            let totalChildren = parent.subconceptos.length;
+            let fiCount = 0;
+
+            parent.subconceptos.forEach(child => {
+                if (child.eval === "NY") hasNY = true;
+                else if (child.eval === "PI") hasPI = true;
+                else if (child.eval === "LI") hasLI = true;
+                else if (child.eval === "FI") fiCount++;
+                else if (child.eval === "NR") hasNR = true;
             });
+
+            // 1. Si hay un subconcepto "No Implementado" (NY), el proceso está roto -> El Padre se degrada a NY
             if (hasNY) return "NY";
+            // 2. Si todo lo evaluado está sin calificar (NR), el padre se queda en NR
+            if (hasNR && fiCount === 0 && !hasPI && !hasLI) return "NR";
+            // 3. Si hay brechas parciales (PI), el proceso no avanza de Parcial
             if (hasPI) return "PI";
-            if (hasLI) return "LI";
-            return "FI";
+            // 4. Si hay lineamientos en Mayoría (LI) pero no todos completados, es LI
+            if (hasLI || (fiCount > 0 && fiCount < totalChildren)) return "LI";
+            // 5. ÚNICAMENTE si el 100% de los subconceptos son FI, el Padre obtiene la validación Total (FI)
+            if (fiCount === totalChildren) return "FI";
+
+            return "PI"; // Comportamiento defensivo fallback
         }
 
-        function calcularYRenderizarTodo() {
-            renderMatrizVisual();
-            renderEditorModulo();
-            actualizarDashboardGlobal();
-            calcularMatrizTransversal();
-            renderFrameworkTransversal();
-        }
+        function refreshModuleRows(modKey) {
+            const tbody = document.getElementById(`tbody-${modKey}`);
+            if(!tbody) return; tbody.innerHTML = "";
 
-        function renderMatrizVisual() {
-            const headerRow = document.getElementById('matrix-header-row');
-            headerRow.innerHTML = '<th>Línea</th>' + listadoModulos.map(m => `<th>${m.name}</th>`).join('');
-            const tbody = document.getElementById('matrix-body');
-            tbody.innerHTML = '';
-
-            for (let i = 1; i <= 9; i++) {
-                const posKey = `pos_${i}`;
-                const tr = document.createElement('tr');
-                let htmlCells = `<td class="col-fixed-left">Pos ${i}</td>`;
-                listadoModulos.forEach(mod => {
-                    const padre = baseDatosLocal.find(p => p.modulo_key === mod.key && p.posicion_fila === posKey);
-                    const status = padre ? getMaturity(padre) : "NR";
-                    htmlCells += `<td><span class="cell-badge badge-${status}">${status}</span></td>`;
-                });
-                tr.innerHTML = htmlCells;
-                tbody.appendChild(tr);
-            }
-        }
-
-        function renderEditorModulo() {
-            const container = document.getElementById('module-editor-container');
-            const modInfo = listadoModulos.find(m => m.key === moduloActivo);
-            if(!modInfo) return;
-            const filtrados = baseDatosLocal.filter(p => p.modulo_key === moduloActivo);
-
-            container.innerHTML = `
-                <div class="module-editor-header">
-                    <span>MÓDULO: ${modInfo.name.toUpperCase()}</span>
-                    <button class="btn-action" style="background:#22c55e;" onclick="addParentCloud()">➕ Añadir Concepto Principal</button>
-                </div>
-                <table style="margin-top:10px;">
-                    <thead>
-                        <tr>
-                            <th style="width: 12%">Estructura / Posición</th>
-                            <th style="width: 48%">Concepto / Métrica Check (Editable)</th>
-                            <th style="width: 20%">Calificación Operativa</th>
-                            <th style="width: 20%">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-editor"></tbody>
-                </table>
-            `;
-
-            const tbody = document.getElementById('tbody-editor');
-            if(filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; color:var(--secondary)">No hay puntos asignados a este cliente. Haz clic en el botón naranja de arriba para inyectar el temario base.</td></tr>`;
-                return;
-            }
-
-            filtrados.forEach(parent => {
-                const status = getMaturity(parent);
-                const trP = document.createElement('tr');
-                trP.className = "row-parent";
-                trP.innerHTML = `
-                    <td>
-                        <select onchange="updateParentPos(${parent.id}, this.value)">
-                            ${[1,2,3,4,5,6,7,8,9].map(n => `<option value="pos_${n}" ${parent.posicion_fila===`pos_${n}`?'selected':''}>Pos ${n}</option>`).join('')}
-                        </select>
-                        <br>
-                        <select style="margin-top:4px; font-size:9px;" onchange="updateParentPilar(${parent.id}, this.value)">
-                            ${['Gobernanza','Alineación','Cultura','Tecnología'].map(p => `<option value="${p}" ${parent.pilar_transversal===p?'selected':''}>${p}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td>
-                        <input type="text" value="${parent.texto || ''}" onchange="updateParentText(${parent.id}, this.value)" style="width:95%; font-weight:bold; padding:6px; border:1px solid #94a3b8; border-radius:4px;">
-                    </td>
-                    <td>
-                        <span class="cell-badge badge-${status}" style="font-size:11px;">ESTRICTO: ${status}</span>
-                    </td>
-                    <td>
-                        <button class="btn-action" style="background:#2563eb;" onclick="addChildCloud(${parent.id})">➕ Métrica / Check</button>
-                        <button class="btn-action btn-delete" onclick="deleteParentCloud(${parent.id})">🗑️</button>
-                    </td>
-                `;
-                tbody.appendChild(trP);
-
-                // Caja General de Notas del Concepto Padre
-                const trN = document.createElement('tr');
-                trN.innerHTML = `
-                    <td colspan="1" style="background:#f8fafc; text-align:right; font-weight:600; color:#475569;">Gral Notas:</td>
-                    <td colspan="3">
-                        <textarea class="evidence-box" placeholder="Notas e inconsistencias de este concepto..." onchange="updateParentNotas(${parent.id}, this.value)">${parent.notas || ''}</textarea>
-                    </td>
-                `;
-                tbody.appendChild(trN);
-
-                // Desglose de hijos transformados a campos de texto libres independientes (Cajas de Observaciones individuales)
-                if(parent.subconceptos_hijo) {
-                    parent.subconceptos_hijo.forEach(child => {
-                        const trC = document.createElement('tr');
-                        trC.className = "row-child";
-                        trC.innerHTML = `
-                            <td style="text-align:right; color:var(--secondary); font-weight:bold; vertical-align:middle;">↳ Observación / Check:</td>
-                            <td>
-                                <textarea class="metric-check-input" onchange="updateChildText(${child.id}, this.value)" placeholder="Escriba aquí la observación o punto de chequeo detallado...">${child.texto || ''}</textarea>
-                            </td>
-                            <td style="vertical-align:middle;">
-                                <select class="badge-${child.eval}" onchange="updateChildEval(${child.id}, this.value)" style="width:90%; font-weight:bold; padding:4px;">
-                                    <option value="NR" ${child.eval==='NR'?'selected':''}>NR (Sin Evaluar)</option>
-                                    <option value="FI" ${child.eval==='FI'?'selected':''}>FI (Total)</option>
-                                    <option value="LI" ${child.eval==='LI'?'selected':''}>LI (Mayoría)</option>
-                                    <option value="PI" ${child.eval==='PI'?'selected':''}>PI (Parcial)</option>
-                                    <option value="NY" ${child.eval==='NY'?'selected':''}>NY (Falla Crítica)</option>
-                                </select>
-                            </td>
-                            <td style="vertical-align:middle;">
-                                <button class="btn-action btn-delete" style="padding:4px 8px;" onclick="deleteChildCloud(${child.id})">🗑️ Quitar Check</button>
-                            </td>
-                        `;
-                        tbody.appendChild(trC);
-                    });
-                }
-            });
-        }
-
-        async function inyectarSemillaCompleta() {
-            if(!confirm("¿Deseas precargar la base estructural completa con todos los módulos y puntos de control del Word original? Esto te ahorrará capturas repetitivas.")) return;
-            
-            document.getElementById('cloud-status').innerText = "⏳ Sembrando estructura...";
-            const cliente = getClienteId();
-            
-            for(let item of semillaTemarioWord) {
-                const { data: pData, error: pErr } = await _supabase
-                    .from('conceptos_padre')
-                    .insert([{ modulo_key: item.modulo, cliente_id: cliente, texto: item.texto, posicion_fila: item.pos, pilar_transversal: item.pilar, eval_manual: 'NR', notas: '' }])
-                    .select();
+            const conceptos = erpTreeSchema[modKey] || [];
+            conceptos.forEach((parent, pIdx) => {
+                const pNum = pIdx + 1;
                 
-                if(!pErr && pData && pData.length > 0) {
-                    const padreId = pData[0].id;
-                    const subRows = item.sub.map(s => ({ padre_id: padreId, texto: s, eval: 'NR' }));
-                    await _supabase.from('subconceptos_hijo').insert(subRows);
-                }
-            }
-            alert("✅ Estructura cargada correctamente. Ahora cada check es un cuadro de observación completamente editable.");
-            loadAllData();
-        }
+                // Aplicación de la nueva regla estricta sin promedios
+                let calculatedEval = calculateStrictMaturity(parent);
+                parent.calculatedFinalEval = calculatedEval;
 
-        async function addParentCloud() {
-            await _supabase.from('conceptos_padre').insert([{ modulo_key: moduloActivo, cliente_id: getClienteId(), texto: 'Nuevo Concepto Modificable', posicion_fila: 'pos_1', pilar_transversal: 'Gobernanza', eval_manual: 'NR', notas: '' }]);
-            loadAllData();
-        }
-        async function deleteParentCloud(id) {
-            if(confirm("¿Seguro que deseas eliminar este concepto principal? Se borrarán también sus sublineamientos asociados.")) {
-                await _supabase.from('subconceptos_hijo').delete().eq('padre_id', id);
-                await _supabase.from('conceptos_padre').delete().eq('id', id);
-                loadAllData();
-            }
-        }
-        async function addChildCloud(padreId) {
-            await _supabase.from('subconceptos_hijo').insert([{ padre_id: padreId, texto: 'Nueva observación / criterio de chequeo...', eval: 'NR' }]);
-            loadAllData();
-        }
-        async function deleteChildCloud(id) {
-            await _supabase.from('subconceptos_hijo').delete().eq('id', id);
-            loadAllData();
-        }
+                // Fila Padre
+                const trParent = document.createElement('tr');
+                trParent.className = "row-parent";
+                trParent.innerHTML = `
+                    <td>${pNum}</td>
+                    <td>
+                        <input type="text" class="editable-title" value="${parent.texto}" onchange="erpTreeSchema['${modKey}'][${pIdx}].texto = this.value">
+                        <div style="margin-top:4px;"><button class="btn-action btn-add-child" onclick="addChildConcept('${modKey}', ${pIdx})">➕ Añadir Subconcepto Técnico</button></div>
+                    </td>
+                    <td>
+                        ${parent.subconceptos.length > 0 ? 
+                            `<span class="badge-calculated badge-${calculatedEval}">ESTRICTO: ${calculatedEval}</span>` : 
+                            `<select class="${calculatedEval.toLowerCase()}-s" onchange="updateStandaloneParentEval('${modKey}', ${pIdx}, this.value)">
+                                <option value="NR" ${calculatedEval==='NR'?'selected':''}>NR</option>
+                                <option value="FI" ${calculatedEval==='FI'?'selected':''}>FI (Total)</option>
+                                <option value="LI" ${calculatedEval==='LI'?'selected':''}>LI (Mayoría)</option>
+                                <option value="PI" ${calculatedEval==='PI'?'selected':''}>PI (Parcial)</option>
+                                <option value="NY" ${calculatedEval==='NY'?'selected':''}>NY (No Implementado)</option>
+                            </select>`
+                        }
+                    </td>
+                    <td><textarea placeholder="Notas e inconsistencias de este concepto..." onchange="erpTreeSchema['${modKey}'][${pIdx}].notas = this.value">${parent.notas || ''}</textarea></td>
+                `;
+                tbody.appendChild(trParent);
 
-        async function updateChildEval(id, val) { await _supabase.from('subconceptos_hijo').update({ eval: val }).eq('id', id); loadAllData(); }
-        async function updateParentPos(id, pos) { await _supabase.from('conceptos_padre').update({ posicion_fila: pos }).eq('id', id); loadAllData(); }
-        async function updateParentPilar(id, pil) { await _supabase.from('conceptos_padre').update({ pilar_transversal: pil }).eq('id', id); loadAllData(); }
-        async function updateParentText(id, txt) { await _supabase.from('conceptos_padre').update({ texto: txt }).eq('id', id); }
-        async function updateChildText(id, txt) { await _supabase.from('subconceptos_hijo').update({ texto: txt }).eq('id', id); }
-        async function updateParentNotas(id, txt) { await _supabase.from('conceptos_padre').update({ notas: txt }).eq('id', id); }
-
-        function calcularMatrizTransversal() {
-            const ejes = { Gobernanza: { ny:0, pi:0, li:0 }, Alineación: { ny:0, pi:0, li:0 }, Cultura: { ny:0, pi:0, li:0 }, Tecnología: { ny:0, pi:0, li:0 } };
-            baseDatosLocal.forEach(p => {
-                const pilar = p.pilar_transversal || 'Gobernanza';
-                const status = getMaturity(p);
-                if(ejes[pilar]) {
-                    if(status === 'NY') ejes[pilar].ny++;
-                    if(status === 'PI') ejes[pilar].pi++;
-                    if(status === 'LI') ejes[pilar].li++;
-                }
-            });
-            const codigos = { Gobernanza: 'gob', Alineación: 'ali', Cultura: 'cul', Tecnología: 'tec' };
-            for(let ej in ejes) {
-                let c = codigos[ej];
-                if(document.getElementById(`t-${c}-ny`)) {
-                    document.getElementById(`t-${c}-ny`).innerText = ejes[ej].ny;
-                    document.getElementById(`t-${c}-pi`).innerText = ejes[ej].pi;
-                    document.getElementById(`t-${c}-li`).innerText = ejes[ej].li;
-                }
-            }
-        }
-
-        function renderFrameworkTransversal() {
-            const container = document.getElementById('framework-ejes-container');
-            container.innerHTML = "";
-            estructuraEjesTransversales.forEach((eje, ejeIndex) => {
-                const box = document.createElement('div');
-                box.className = "matrix-box";
-                let tableRowsHtml = "";
-                eje.conceptos.forEach((concepto, conceptoIndex) => {
-                    let classInit = "select-impact-critico"; let valInit = "CRÍTICO";
-                    if ((conceptoIndex + ejeIndex) % 3 === 1) { classInit = "select-impact-alto"; valInit = "ALTO"; }
-                    if ((conceptoIndex + ejeIndex) % 3 === 2) { classInit = "select-impact-medio"; valInit = "MEDIO"; }
-                    tableRowsHtml += `
-                        <tr>
-                            <td style="width: 25%; font-weight: bold; color:#1e293b;">${concepto}</td>
-                            <td style="width: 15%;">
-                                <select class="${classInit}" onchange="this.className = this.value === 'CRÍTICO' ? 'select-impact-critico' : (this.value === 'ALTO' ? 'select-impact-alto' : 'select-impact-medio')">
-                                    <option value="CRÍTICO" ${valInit==='CRÍTICO'?'selected':''}>⚠️ CRÍTICO</option>
-                                    <option value="ALTO" ${valInit==='ALTO'?'selected':''}>🔸 ALTO</option>
-                                    <option value="MEDIO" ${valInit==='MEDIO'?'selected':''}>🔹 MEDIO</option>
-                                </select>
-                            </td>
-                            <td style="width: 30%;"><textarea placeholder="Describa la inconsistencia detectada..."></textarea></td>
-                            <td style="width: 30%;"><textarea placeholder="Acción de mitigación inmediata..."></textarea></td>
-                        </tr>`;
+                // Filas Hijos
+                parent.subconceptos.forEach((child, cIdx) => {
+                    const trChild = document.createElement('tr');
+                    trChild.className = "row-child";
+                    trChild.innerHTML = `
+                        <td>${pNum}.${cIdx + 1}</td>
+                        <td>↳ <input type="text" style="width:92%; display:inline-block;" value="${child.texto}" onchange="erpTreeSchema['${modKey}'][${pIdx}].subconceptos[${cIdx}].texto = this.value"></td>
+                        <td>
+                            <select class="${child.eval.toLowerCase()}-s" onchange="updateChildEval('${modKey}', ${pIdx}, ${cIdx}, this.value)">
+                                <option value="NR" ${child.eval==='NR'?'selected':''}>NR</option>
+                                <option value="FI" ${child.eval==='FI'?'selected':''}>FI</option>
+                                <option value="LI" ${child.eval==='LI'?'selected':''}>LI</option>
+                                <option value="PI" ${child.eval==='PI'?'selected':''}>PI</option>
+                                <option value="NY" ${child.eval==='NY'?'selected':''}>NY</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Métrica/Check..." value="${child.notas || ''}" onchange="erpTreeSchema['${modKey}'][${pIdx}].subconceptos[${cIdx}].notas = this.value"></td>
+                    `;
+                    tbody.appendChild(trChild);
                 });
-                box.innerHTML = `<div class="matrix-title">${eje.titulo}</div><table class="transversal-editor-table"><thead><tr><th>CONCEPTO</th><th>IMPACTO</th><th>INCONSISTENCIA DETECTADA</th><th>ACCIÓN DE MITIGACIÓN</th></tr></thead><tbody>${tableRowsHtml}</tbody></table>`;
-                container.appendChild(box);
+
+                // Render en el Grid de Control del Dashboard
+                const matrixCell = document.getElementById(`cell-${modKey}-${pNum}`);
+                if(matrixCell) {
+                    matrixCell.className = `grid-cell c-${calculatedEval}`;
+                    matrixCell.innerText = calculatedEval;
+                }
             });
+
+            recalculateAllScores();
         }
 
-        function actualizarDashboardGlobal() {
-            const bloques = { nucleares: { total: 0, fi: 0 }, financieros: { total: 0, fi: 0 }, auxiliares: { total: 0, fi: 0 }, prosuite: { total: 0, fi: 0 } };
-            listadoModulos.forEach(mod => {
-                const padresModulo = baseDatosLocal.filter(p => p.modulo_key === mod.key);
-                padresModulo.forEach(p => {
-                    const status = getMaturity(p);
-                    bloques[mod.block].total++;
-                    if (status === 'FI') bloques[mod.block].fi++;
+        function addParentConcept(modKey) {
+            if(!erpTreeSchema[modKey]) erpTreeSchema[modKey] = [];
+            erpTreeSchema[modKey].push({ texto: "Nuevo Requerimiento de Proceso", eval: "NR", subconceptos: [] });
+            refreshModuleRows(modKey);
+        }
+
+        function addChildConcept(modKey, parentIdx) {
+            erpTreeSchema[modKey][parentIdx].subconceptos.push({ texto: "Nuevo Lineamiento Específico", eval: "NR" });
+            refreshModuleRows(modKey);
+        }
+
+        function updateStandaloneParentEval(modKey, parentIdx, value) {
+            erpTreeSchema[modKey][parentIdx].eval = value;
+            refreshModuleRows(modKey);
+        }
+
+        function updateChildEval(modKey, parentIdx, childIdx, value) {
+            erpTreeSchema[modKey][parentIdx].subconceptos[childIdx].eval = value;
+            refreshModuleRows(modKey);
+        }
+
+        function recalculateAllScores() {
+            for (let blockName in blocksMapping) {
+                let totalItems = 0; let scoredPoints = 0;
+                blocksMapping[blockName].forEach(mod => {
+                    const conceptos = erpTreeSchema[mod] || [];
+                    conceptos.forEach(p => {
+                        totalItems++;
+                        let val = p.calculatedFinalEval || "NR";
+                        if (val === 'FI') scoredPoints += 1.0; 
+                        else if (val === 'LI') scoredPoints += 0.7; 
+                        else if (val === 'PI') scoredPoints += 0.3;
+                    });
                 });
+                const pct = totalItems > 0 ? Math.round((scoredPoints / totalItems) * 100) : 0;
+                document.getElementById(`score-${blockName}`).innerText = `${pct}% Adopción`;
+                document.getElementById(`bar-${blockName}`).style.width = `${pct}%`;
+            }
+        }
+
+        function renderTransversalesLocales() {
+            const wrapper = document.getElementById('diagnostico-bloques-wrapper');
+            wrapper.innerHTML = "";
+            const pilaresMeta = {
+                Gobernanza: { title: "🏢 1. Eje: Gobernanza, Estructura y Organigrama", idTable: "tabla-gob-est" },
+                Alineacion: { title: "🔄 2. Eje: Alineación de Procesos (Flujo vs Software)", idTable: "tabla-proc-alin" },
+                Cultura: { title: "👥 3. Eje: Cultura y Gestión del Cambio (Personas)", idTable: "tabla-cultura" },
+                Tecnologia: { title: "⚡ 4. Eje: Estrategia Tecnológica y Automatización", idTable: "tabla-tecnologia" }
+            };
+
+            for(let key in pilaresMeta) {
+                const card = document.createElement('div'); card.className = "audit-card";
+                card.innerHTML = `
+                    <div class="audit-card-title">${pilaresMeta[key].title}</div>
+                    <table id="${pilaresMeta[key].idTable}">
+                        <thead><tr><th style="width:25%">Concepto</th><th style="width:12%">Impacto</th><th style="width:31%">Inconsistencia Detectada</th><th style="width:32%">Acción de Mitigación</th></tr></thead>
+                        <tbody></tbody>
+                    </table>`;
+                wrapper.appendChild(card);
+            }
+
+            defaultTransversales.forEach(row => {
+                const tbody = document.getElementById(pilaresMeta[row.pilar].idTable).querySelector('tbody');
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><strong>${row.concepto}</strong></td><td><select class="${row.impacto==='CRÍTICO'?'imp-critico':row.impacto==='ALTO'?'imp-alto':'imp-medio'}" onchange="updateImpactStyle(this)"><option value="CRÍTICO" ${row.impacto==='CRÍTICO'?'selected':''}>💥 CRÍTICO</option><option value="ALTO" ${row.impacto==='ALTO'?'selected':''}>⚠️ ALTO</option><option value="MEDIO" ${row.impacto==='MEDIO'?'selected':''}>⚠️ MEDIO</option></select></td><td><textarea>${row.incons}</textarea></td><td><textarea>${row.accion}</textarea></td>`;
+                tr.querySelector('select').addEventListener('change', recalculateTransversalMatrix);
+                tbody.appendChild(tr);
             });
-            for (const b in bloques) {
-                const pct = bloques[b].total > 0 ? Math.round((bloques[b].fi / bloques[b].total) * 100) : 0;
-                document.getElementById(`lbl-pct-${b}`).innerText = `${pct}%`;
-                document.getElementById(`bar-${b}`).style.width = `${pct}%`;
-            }
+            recalculateTransversalMatrix();
         }
 
-        function switchTab(e, tabId, blockName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            e.currentTarget.classList.add('active');
-            if(blockName !== '') {
-                bloqueActivo = blockName;
-                const filtrados = listadoModulos.filter(m => m.block === blockName);
-                const selector = document.getElementById('selector-modulo-block');
-                selector.innerHTML = filtrados.map(m => `<option value="${m.key}">${m.name}</option>`).join('');
-                moduloActivo = filtrados[0].key;
-                renderEditorModulo();
-            }
+        function recalculateTransversalMatrix() {
+            const pilares = ['Gobernanza', 'Alineacion', 'Cultura', 'Tecnologia'];
+            pilares.forEach(p => ['CRÍTICO', 'ALTO', 'MEDIO'].forEach(i => { const c = document.getElementById(`matrix-${p}-${i}`); if(c){c.innerText="0"; c.className="trans-cell no-finding";} }));
+
+            document.querySelectorAll('#diagnostico-bloques-wrapper table tbody tr').forEach(tr => {
+                const impVal = tr.querySelector('select').value;
+                const tableId = tr.closest('table').id;
+                let pK = tableId==="tabla-gob-est"?"Gobernanza":tableId==="tabla-proc-alin"?"Alineacion":tableId==="tabla-cultura"?"Cultura":"Tecnologia";
+                const cell = document.getElementById(`matrix-${pK}-${impVal}`);
+                if(cell) { let cnt = parseInt(cell.innerText)||0; cnt++; cell.innerText = cnt; cell.className = "trans-cell has-finding"; }
+            });
         }
 
-        function seleccionarModuloInterno(modKey) { moduloActivo = modKey; renderEditorModulo(); }
-        window.onload = loadAllData;
+        function updateImpactStyle(s) { s.className=''; if(s.value==='CRÍTICO')s.classList.add('imp-critico'); else if(s.value==='ALTO')s.classList.add('imp-alto'); else s.classList.add('imp-medio'); recalculateTransversalMatrix(); }
+        function switchTab(e, id) { document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active'); }
+        function previewLogo(i,pId,tId) { const p=document.getElementById(pId); if(i.files&&i.files[0]){const r=new FileReader(); r.onload=function(e){p.src=e.target.result; p.style.display='block'; document.getElementById(tId).style.display='none';}; r.readAsDataURL(i.files[0]);} }
+
+        window.onload = function() { 
+            initMatrixGrid(); 
+            renderHierarchicalTables();
+            renderTransversalesLocales();
+        };
     </script>
 </body>
 </html>
