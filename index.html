@@ -144,6 +144,10 @@
         .btn-delete { background-color: #dc2626 !important; padding: 3px 6px; font-size: 10px; }
         
         .selector-modulo-inline { background: #1e293b; color: white; border: 1px solid #475569; padding: 4px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        
+        /* ESTILO SECCIÓN OBSERVACIONES / EVIDENCIAS */
+        .evidence-box { width: 100%; height: 35px; border: 1px solid var(--border-color); border-radius: 4px; padding: 6px; font-size: 11px; box-sizing: border-box; font-family: inherit; }
+        .metric-check-input { width: 100%; border: 1px solid var(--border-color); border-radius: 4px; padding: 6px; font-size: 11px; box-sizing: border-box; font-family: inherit; }
     </style>
 </head>
 <body>
@@ -226,7 +230,7 @@
             <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
                 <label style="font-weight: bold;">Módulo Seleccionado:</label>
                 <select id="selector-modulo-block" class="selector-modulo-inline" onchange="seleccionarModuloInterno(this.value)"></select>
-                <button class="btn-action" style="background:#ea580c" onclick="inyectarSemillaCompleta()">🌱 Forzar Estructura Base Temario Word</button>
+                <button class="btn-action" style="background:#ea580c" onclick="inyectarSemillaCompleta()">🌱 Cargar Todos los Puntos del Word Original</button>
             </div>
             <div id="module-editor-container"></div>
         </div>
@@ -265,25 +269,19 @@
             { key: 'edi', name: 'EDI', block: 'prosuite' }
         ];
 
-        // SEMILLA ESTRUCTURAL COMPLETA EXTRAÍDA FIELMENTE DEL DOCUMENTO WORD ENTREGADO
         const semillaTemarioWord = [
-            // MÓDULOS NUCLEARES
             { modulo: "trafico", texto: "Ciclo de Servicio Operativo y Documental", pos: "pos_1", pilar: "Alineación", sub: ["Revisión de catálogos principales", "Generación de orden de servicio", "Creación de bitácora de viaje (Asignación de recursos)", "Consideraciones para complemento de carta porte", "Asignación de carta porte", "Seguimiento ciclo de servicio", "Cierre de viaje operativo", "Cierre de viaje documental", "Generación CXP combustible", "Principales consultas y reportes"] },
             { modulo: "facturacion", texto: "Bandejas de Timbrado y Cancelación Fiscal", pos: "pos_1", pilar: "Alineación", sub: ["Revisión de catálogos principales", "Generación de factura a partir de una orden de servicio", "Generación de factura especial", "Generación factura adicional", "Proceso de cancelación de facturas", "Generación de contra recibo", "Revisión de bandeja de timbrado", "Revisión de bandeja de cancelaciones", "Principales reportes"] },
             { modulo: "liquidaciones", texto: "Proceso de Liquidaciones y Tabuladores de Operador", pos: "pos_1", pilar: "Gobernanza", sub: ["Catálogos que intervienen en el módulo", "Generación de tabuladores", "Generación de deducciones programadas", "Proceso de liquidación", "Liga de información electrónica", "Proceso de cancelación", "Proceso de contabilización", "Proceso para cancelación de póliza", "Principales consultas y reportes"] },
             { modulo: "vigilancia", texto: "Bitácora y Control de Accesos", pos: "pos_1", pilar: "Tecnología", sub: ["Revisión de catálogos", "Registro de entradas", "Registro de Salidas", "Reportes del módulo"] },
             { modulo: "rastreo", texto: "Monitoreo, Geocercas y Posiciones Satelitales", pos: "pos_1", pilar: "Tecnología", sub: ["Catálogos del módulo", "Ventana de procesos", "Puntos de interés", "Geocercas", "Vista posiciones", "Notificaciones"] },
             { modulo: "admin", texto: "Seguridad, Perfiles y Segregación de Roles", pos: "pos_1", pilar: "Gobernanza", sub: ["Catálogos del módulo", "Creación de usuarios", "Creación de grupos", "Asignación de privilegios", "Asignación de firmas electrónicas para procesos especiales", "Baja de usuarios", "Control de folios", "Bitácoras de accesos"] },
-            
-            // MÓDULOS FINANCIEROS
             { modulo: "cxc", texto: "Aplicación de Cobranza y Recibos Electrónicos (REP)", pos: "pos_1", pilar: "Alineación", sub: ["Revisión de catálogos principales", "Contabilización de facturas", "Aplicación de cobranza", "Aplicaciones especiales", "Aplicación de notas de crédito", "Aplicación de anticipo de clientes", "Cancelación de aplicaciones", "Timbrado de recibo de cobro", "Principales reportes"] },
             { modulo: "cxp", texto: "Procesamiento de XML y Contra Recibos", pos: "pos_1", pilar: "Alineación", sub: ["Revisión de catálogos principales", "Generación de contra recibo", "Generación de CXP a través de un XML", "Generación de una CXP", "Aplicación especial", "Aplicación de nota de crédito", "Principales reportes"] },
             { modulo: "bancos", texto: "Conciliación Bancaria y Dispersión de Anticipos", pos: "pos_1", pilar: "Gobernanza", sub: ["Revisión de catálogos principales", "Pago de vales de anticipo", "Registro de pago directo", "Registro de pago a CXP", "Registro de comisiones bancarias", "Traspasos bancarios", "Registro de ingresos directos", "Cancelación de pólizas", "Conciliación bancaria", "Conciliación de Complemento de pagos", "Principales reportes y consultas"] },
             { modulo: "caja", texto: "Fondo Fijo y Comprobaciones de Anticipos", pos: "pos_1", pilar: "Alineación", sub: ["Apertura de fondo fijo", "Revisión de catálogos principales", "Registro de pago directo", "Registro de vales de anticipo a operadores", "Registro de anticipo por comprobar", "Registro de comprobación de anticipos", "Generación de reembolso", "Cancelación de póliza de reembolso", "Principales reportes"] },
             { modulo: "activo", texto: "Depreciaciones y Control de Activo Fijo", pos: "pos_1", pilar: "Gobernanza", sub: ["Catálogos del módulo", "Alta de activos fijos", "Bajas de activo fijo", "Registro de Mejoras", "Depreciaciones", "Contabilización de depreciaciones", "Principales reportes"] },
             { modulo: "contabilidad", texto: "Pólizas de Diario y Cierre de Periodos Contables", pos: "pos_1", pilar: "Gobernanza", sub: ["Revisión de catálogos principales", "Apertura de periodos contables", "Generación de póliza de saldos iniciales", "Generación de pólizas de diario", "Aplicación de pólizas", "Cancelación de pólizas", "Configuración de estados financieros", "Principales consultas y reportes"] },
-            
-            // MÓDULOS AUXILIARES
             { modulo: "compras", texto: "Flujo de Abastecimiento, Autorizaciones y Órdenes de Compra", pos: "pos_1", pilar: "Alineación", sub: ["Catálogos que intervienen en el módulo", "Generación de pedido y autorización", "Generación de cotización y autorización", "Generación de orden de compra y autorización", "Generación de recepción", "Contabilización de recepción", "Cancelación de recepción", "Cargo directo al almacén", "Devolución de compras", "Principales consultas y reportes"] },
             { modulo: "almacen", texto: "Inventario Físico, Entradas y Salidas", pos: "pos_1", pilar: "Alineación", sub: ["Catálogos que intervienen en el módulo", "Generación de pedidos", "Registro de entradas al almacén", "Registro de salidas del almacén", "Contabilización de entradas y salidas", "Registro del inventario físico", "Principales consultas y reportes"] },
             { modulo: "mantenimiento", texto: "Preventivos y Órdenes de Trabajo (OT)", pos: "pos_1", pilar: "Cultura", sub: ["Catálogos que intervienen en el módulo", "Preventivos programados", "Consulta de mantenimientos programados", "Generación de orden de trabajo", "Seguimiento de acciones", "Solicitud de insumos al almacén", "Cierre de orden de trabajo", "Proceso para interrumpir una orden de trabajo", "Registro de facturas de mantenimiento externo", "Autorización y contabilización de facturas externas", "Principales consultas y reportes"] },
@@ -309,7 +307,7 @@
             try {
                 let { data: conceptos, error } = await _supabase
                     .from('conceptos_padre')
-                    .select('id, modulo_key, texto, eval_manual, posicion_fila, pilar_transversal, subconceptos_hijo(id, texto, eval)')
+                    .select('id, modulo_key, texto, eval_manual, posicion_fila, pilar_transversal, notas, subconceptos_hijo(id, texto, eval)')
                     .eq('cliente_id', getClienteId());
 
                 if (error) throw error;
@@ -376,15 +374,14 @@
             container.innerHTML = `
                 <div class="module-editor-header">
                     <span>MÓDULO: ${modInfo.name.toUpperCase()}</span>
-                    <button class="btn-action" style="background:#22c55e;" onclick="addParentCloud()">➕ Agregar Nuevo Concepto Control</button>
+                    <button class="btn-action" style="background:#22c55e;" onclick="addParentCloud()">➕ Añadir Concepto Principal</button>
                 </div>
                 <table style="margin-top:10px;">
                     <thead>
                         <tr>
-                            <th style="width: 10%">Posición</th>
-                            <th style="width: 15%">Pilar Transversal</th>
-                            <th style="width: 45%">Concepto Evaluado / Punto de Control</th>
-                            <th style="width: 10%">Estatus</th>
+                            <th style="width: 12%">Estructura / Posición</th>
+                            <th style="width: 48%">Concepto / Métrica Check (Editable)</th>
+                            <th style="width: 20%">Calificación Operativa</th>
                             <th style="width: 20%">Acciones</th>
                         </tr>
                     </thead>
@@ -394,7 +391,7 @@
 
             const tbody = document.getElementById('tbody-editor');
             if(filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="padding:20px; color:var(--secondary)">Sin datos activos para este cliente. Haz clic arriba en "Forzar Estructura Base" para precargar automáticamente.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; color:var(--secondary)">No hay puntos asignados a este cliente. Haz clic en el botón naranja de arriba para inyectar el temario base.</td></tr>`;
                 return;
             }
 
@@ -407,39 +404,55 @@
                         <select onchange="updateParentPos(${parent.id}, this.value)">
                             ${[1,2,3,4,5,6,7,8,9].map(n => `<option value="pos_${n}" ${parent.posicion_fila===`pos_${n}`?'selected':''}>Pos ${n}</option>`).join('')}
                         </select>
-                    </td>
-                    <td>
-                        <select onchange="updateParentPilar(${parent.id}, this.value)">
+                        <br>
+                        <select style="margin-top:4px; font-size:9px;" onchange="updateParentPilar(${parent.id}, this.value)">
                             ${['Gobernanza','Alineación','Cultura','Tecnología'].map(p => `<option value="${p}" ${parent.pilar_transversal===p?'selected':''}>${p}</option>`).join('')}
                         </select>
                     </td>
-                    <td><input type="text" value="${parent.texto || ''}" onchange="updateParentText(${parent.id}, this.value)" style="width:90%; font-weight:bold;"></td>
-                    <td><span class="cell-badge badge-${status}">${status}</span></td>
                     <td>
-                        <button class="btn-action" onclick="addChildCloud(${parent.id})">➕ Sublineamiento</button>
+                        <input type="text" value="${parent.texto || ''}" onchange="updateParentText(${parent.id}, this.value)" style="width:95%; font-weight:bold; padding:6px; border:1px solid #94a3b8; border-radius:4px;">
+                    </td>
+                    <td>
+                        <span class="cell-badge badge-${status}" style="font-size:11px;">ESTRICTO: ${status}</span>
+                    </td>
+                    <td>
+                        <button class="btn-action" style="background:#2563eb;" onclick="addChildCloud(${parent.id})">➕ Métrica / Check</button>
                         <button class="btn-action btn-delete" onclick="deleteParentCloud(${parent.id})">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(trP);
 
+                // Caja General de Notas del Concepto Padre
+                const trN = document.createElement('tr');
+                trN.innerHTML = `
+                    <td colspan="1" style="background:#f8fafc; text-align:right; font-weight:600; color:#475569;">Gral Notas:</td>
+                    <td colspan="3">
+                        <textarea class="evidence-box" placeholder="Notas e inconsistencias de este concepto..." onchange="updateParentNotas(${parent.id}, this.value)">${parent.notas || ''}</textarea>
+                    </td>
+                `;
+                tbody.appendChild(trN);
+
+                // Desglose de hijos transformados a campos de texto libres independientes (Cajas de Observaciones individuales)
                 if(parent.subconceptos_hijo) {
                     parent.subconceptos_hijo.forEach(child => {
                         const trC = document.createElement('tr');
                         trC.className = "row-child";
                         trC.innerHTML = `
-                            <td colspan="2" style="text-align:right; color:var(--secondary)">↳</td>
-                            <td><input type="text" value="${child.texto || ''}" onchange="updateChildText(${child.id}, this.value)" style="width:90%"></td>
+                            <td style="text-align:right; color:var(--secondary); font-weight:bold; vertical-align:middle;">↳ Observación / Check:</td>
                             <td>
-                                <select class="badge-${child.eval}" onchange="updateChildEval(${child.id}, this.value)" style="font-size:10px;">
-                                    <option value="NR" ${child.eval==='NR'?'selected':''}>NR</option>
-                                    <option value="FI" ${child.eval==='FI'?'selected':''}>FI</option>
-                                    <option value="LI" ${child.eval==='LI'?'selected':''}>LI</option>
-                                    <option value="PI" ${child.eval==='PI'?'selected':''}>PI</option>
-                                    <option value="NY" ${child.eval==='NY'?'selected':''}>NY</option>
+                                <textarea class="metric-check-input" onchange="updateChildText(${child.id}, this.value)" placeholder="Escriba aquí la observación o punto de chequeo detallado...">${child.texto || ''}</textarea>
+                            </td>
+                            <td style="vertical-align:middle;">
+                                <select class="badge-${child.eval}" onchange="updateChildEval(${child.id}, this.value)" style="width:90%; font-weight:bold; padding:4px;">
+                                    <option value="NR" ${child.eval==='NR'?'selected':''}>NR (Sin Evaluar)</option>
+                                    <option value="FI" ${child.eval==='FI'?'selected':''}>FI (Total)</option>
+                                    <option value="LI" ${child.eval==='LI'?'selected':''}>LI (Mayoría)</option>
+                                    <option value="PI" ${child.eval==='PI'?'selected':''}>PI (Parcial)</option>
+                                    <option value="NY" ${child.eval==='NY'?'selected':''}>NY (Falla Crítica)</option>
                                 </select>
                             </td>
-                            <td>
-                                <button class="btn-action btn-delete" style="padding:2px 5px;" onclick="deleteChildCloud(${child.id})">🗑️ Eliminar</button>
+                            <td style="vertical-align:middle;">
+                                <button class="btn-action btn-delete" style="padding:4px 8px;" onclick="deleteChildCloud(${child.id})">🗑️ Quitar Check</button>
                             </td>
                         `;
                         tbody.appendChild(trC);
@@ -448,45 +461,41 @@
             });
         }
 
-        // ACCIÓN CLAVE DE AUTO-POBLACIÓN SIN CAPTURAS MANUALES EXTRA
         async function inyectarSemillaCompleta() {
-            if(!confirm("¿Seguro que deseas restaurar la estructura base completa del temario Word para este cliente? Esto creará los puntos de control ideales.")) return;
+            if(!confirm("¿Deseas precargar la base estructural completa con todos los módulos y puntos de control del Word original? Esto te ahorrará capturas repetitivas.")) return;
             
             document.getElementById('cloud-status').innerText = "⏳ Sembrando estructura...";
             const cliente = getClienteId();
             
             for(let item of semillaTemarioWord) {
-                // Inserción del concepto padre estratégico
                 const { data: pData, error: pErr } = await _supabase
                     .from('conceptos_padre')
-                    .insert([{ modulo_key: item.modulo, cliente_id: cliente, texto: item.texto, posicion_fila: item.pos, pilar_transversal: item.pilar, eval_manual: 'NR' }])
+                    .insert([{ modulo_key: item.modulo, cliente_id: cliente, texto: item.texto, posicion_fila: item.pos, pilar_transversal: item.pilar, eval_manual: 'NR', notas: '' }])
                     .select();
                 
                 if(!pErr && pData && pData.length > 0) {
                     const padreId = pData[0].id;
-                    // Inserción masiva de sus subconceptos correspondientes
                     const subRows = item.sub.map(s => ({ padre_id: padreId, texto: s, eval: 'NR' }));
                     await _supabase.from('subconceptos_hijo').insert(subRows);
                 }
             }
-            alert("✅ Estructura del temario inyectada exitosamente a Supabase.");
+            alert("✅ Estructura cargada correctamente. Ahora cada check es un cuadro de observación completamente editable.");
             loadAllData();
         }
 
-        // LÓGICA DE ACTUALIZACIÓN NUBE Y ELIMINACIÓN MUTABLE
         async function addParentCloud() {
-            await _supabase.from('conceptos_padre').insert([{ modulo_key: moduloActivo, cliente_id: getClienteId(), texto: 'Nuevo Concepto Control', posicion_fila: 'pos_1', pilar_transversal: 'Gobernanza', eval_manual: 'NR' }]);
+            await _supabase.from('conceptos_padre').insert([{ modulo_key: moduloActivo, cliente_id: getClienteId(), texto: 'Nuevo Concepto Modificable', posicion_fila: 'pos_1', pilar_transversal: 'Gobernanza', eval_manual: 'NR', notas: '' }]);
             loadAllData();
         }
         async function deleteParentCloud(id) {
-            if(confirm("¿Eliminar este concepto principal y todos sus sublineamientos subordinados?")) {
+            if(confirm("¿Seguro que deseas eliminar este concepto principal? Se borrarán también sus sublineamientos asociados.")) {
                 await _supabase.from('subconceptos_hijo').delete().eq('padre_id', id);
                 await _supabase.from('conceptos_padre').delete().eq('id', id);
                 loadAllData();
             }
         }
         async function addChildCloud(padreId) {
-            await _supabase.from('subconceptos_hijo').insert([{ padre_id: padreId, texto: 'Nuevo Sublineamiento / Punto de Chequeo', eval: 'NR' }]);
+            await _supabase.from('subconceptos_hijo').insert([{ padre_id: padreId, texto: 'Nueva observación / criterio de chequeo...', eval: 'NR' }]);
             loadAllData();
         }
         async function deleteChildCloud(id) {
@@ -499,6 +508,7 @@
         async function updateParentPilar(id, pil) { await _supabase.from('conceptos_padre').update({ pilar_transversal: pil }).eq('id', id); loadAllData(); }
         async function updateParentText(id, txt) { await _supabase.from('conceptos_padre').update({ texto: txt }).eq('id', id); }
         async function updateChildText(id, txt) { await _supabase.from('subconceptos_hijo').update({ texto: txt }).eq('id', id); }
+        async function updateParentNotas(id, txt) { await _supabase.from('conceptos_padre').update({ notas: txt }).eq('id', id); }
 
         function calcularMatrizTransversal() {
             const ejes = { Gobernanza: { ny:0, pi:0, li:0 }, Alineación: { ny:0, pi:0, li:0 }, Cultura: { ny:0, pi:0, li:0 }, Tecnología: { ny:0, pi:0, li:0 } };
